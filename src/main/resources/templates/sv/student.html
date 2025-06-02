@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Sinh Đại Học Training</title>
+    <link rel="icon" href="/images/logo_tranning_learning.png" type="image/x-icon">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <!-- ======== link icon fontawesome ======== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <!-- ======== Header chính ======== -->
+    <header class="main-header">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-success px-3 student-navbar">
+            <!-- Avatar Học Sinh -->
+            <img src="/images/avatar.png" alt="Avatar" class="rounded-circle student-avatar me-3" width="40" height="40" />
+            
+            <!-- Hamburger menu button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- Danh sách menu chính -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav flex-row flex-lg-row flex-column student-menu">
+                    <!-- Menu: Thông báo -->
+                    <li class="nav-item dropdown me-3 student-menu__item">
+                        <a class="nav-link dropdown-toggle text-white" href="/sv/thong-bao" data-bs-toggle="dropdown">Thông báo</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/sv/thoi-khoa-bieu">Thời khóa biểu</a></li>
+                            <li><a class="dropdown-item" href="/sv/lich-thi">Lịch thi học phần</a></li>
+                            <li><a class="dropdown-item" href="/sv">Trang chính</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Menu: Đánh giá -->
+                    <li class="nav-item dropdown me-3 student-menu__item">
+                        <a class="nav-link dropdown-toggle text-white" href="/sv/danh-gia" data-bs-toggle="dropdown">Đánh giá</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/sv/danh-gia-gv">Đánh giá giảng viên</a></li>
+                            <li><a class="dropdown-item" href="/sv/danh-gia-lop-hoc">Đánh giá lớp học</a></li>
+                            <li><a class="dropdown-item" href="/sv/ket-qua-hoc-tap">Kết quả đánh giá</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Menu: Thông tin lớp -->
+                    <li class="nav-item dropdown me-3 student-menu__item">
+                        <a class="nav-link dropdown-toggle text-white" href="/sv/thong-tin-lop" data-bs-toggle="dropdown">Thông tin Lớp</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/sv/lich-hoc">Lịch học</a></li>
+                            <li><a class="dropdown-item" href="/sv/danh-sach-lop">Danh sách lớp</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Menu: Góc Học Sinh -->
+                    <li class="nav-item dropdown me-3 student-menu__item">
+                        <a class="nav-link dropdown-toggle text-white" href="/sv/goc-sinh-vien" data-bs-toggle="dropdown">Góc Học Sinh</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/sv/thong-tin-sinhvien">Thông tin cá nhân</a></li>
+                            <li><a class="dropdown-item" href="/sv/diem-so">Điểm số</a></li>
+                            <li><a class="dropdown-item" href="/sv/hoc-phi">Học phí</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Menu: Hệ thống -->
+                    <li class="nav-item dropdown student-menu__item">
+                        <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Hệ thống</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/sv/cai-dat">Cài đặt</a></li>
+                            <li><a class="dropdown-item" href="/sv/doi-mat-khau">Đổi mật khẩu</a></li>
+                            <li><a class="dropdown-item" href="/tranning-login">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Bootstrap JS -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

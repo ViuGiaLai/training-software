@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang không tìm thấy - Đại học Tranning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full mx-4 text-center">
+        <!-- Error Illustration -->
+        <div class="mb-8">
+            <div class="mx-auto w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fas fa-search text-blue-600 text-4xl"></i>
+            </div>
+            <h1 class="text-6xl font-bold text-gray-900 mb-4">404</h1>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Trang không tìm thấy</h2>
+            <p class="text-gray-600 mb-8">
+                Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
+            </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-4">
+            <button 
+                onclick="history.back()" 
+                class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center space-x-2"
+            >
+                <i class="fas fa-arrow-left"></i>
+                <span>Quay lại trang trước</span>
+            </button>
+            
+            <a 
+                href="../login.html" 
+                class="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-200 transition duration-200 flex items-center justify-center space-x-2"
+            >
+                <i class="fas fa-home"></i>
+                <span>Về trang chủ</span>
+            </a>
+        </div>
+
+        <!-- Help Links -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <p class="text-sm text-gray-600 mb-4">Cần hỗ trợ?</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-envelope mr-1"></i>Liên hệ IT
+                </a>
+                <a href="#" class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-question-circle mr-1"></i>Trợ giúp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Pattern -->
+    <div class="fixed inset-0 -z-10 opacity-5">
+        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23000000" fill-opacity="0.1"><circle cx="30" cy="30" r="2"/></g></svg>')"></div>
+    </div>
+</body>
+</html>

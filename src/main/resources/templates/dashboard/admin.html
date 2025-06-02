@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Đào tạo - Admin</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <!-- Sử dụng Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin-style.css">
+    <link rel="icon" href="/images/logo_tranning_learning.png" type="image/x-icon">
+    <style>
+        /* Đảm bảo flexbox hoạt động tốt khi sidebar dài */
+        .admin-container {
+            display: flex;
+            min-height: 0;
+        }
+        .admin-sidebar {
+            height: 100vh;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+        /* Đánh dấu link đang active */
+        .sidebar-menu .submenu li a.active,
+        .dashboard a.active {
+            background-color: #1976d2 !important;
+            color: #fff !important;
+            font-weight: 600;
+            padding: 8px 72px 8px 16px;
+            /* Đảm bảo KHÔNG có transition */
+        }
+        /* Xóa mọi transition trên sidebar menu */
+        .admin-sidebar .sidebar-menu .submenu li a,
+        .admin-sidebar .dashboard > a {
+            transition: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Top Navigation - Cập nhật icon menu -->
+        <nav class="admin-topnav">
+            <div class="topnav-left">
+                <button class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="system-name">Hệ thống Quản lý Đào tạo</h1>
+            </div>
+            <div class="topnav-right">
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Bell notification -->
+                    <button class="btn btn-link p-0 me-2" style="color:#607d8b;">
+                        <i class="fas fa-bell fa-lg"></i>
+                    </button>
+                    <!-- User dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/images/avatar.png" alt="Avatar" class="user-avatar me-2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:#f2f2f2;">
+                            <span class="fw-semibold" style="color:#222;">Admin User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/admin/dashboard/profile">
+                                    <i class="fas fa-user-circle me-2"></i>Thông tin cá nhân
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/admin/dashboard/settings">
+                                    <i class="fas fa-cog me-2"></i>Cài đặt
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/tranning-login">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar - Cập nhật tất cả icon -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <img src="/images/logo_tranning_learning.png" alt="Logo" class="sidebar-logo">
+                <h3>Trung tâm Đào tạo</h3>
+            </div>
+            <div class="dashboard">
+                <a href="/admin/dashboard/dashboard" target="mainFrame" id="dashboard-link">Dashboard</a>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-category"><i class="fas fa-sliders-h"></i> Chức năng chính</li>
+                <!-- Quản lý người dùng -->
+                <li class="menu-item has-dropdown">
+                    <a href="#" onclick="toggleDropdown(event, 'user-dropdown')">
+                        <i class="fas fa-users-cog"></i> 
+                        <span>Quản lý người dùng</span>
+                        <i class="fas fa-angle-down float-end"></i>
+                    </a>
+                    <ul class="submenu" id="user-dropdown" style="display:none;">
+                        <li><a href="/admin/dashboard/user-list" target="mainFrame"><i class="fas fa-list"></i> Danh sách người dùng</a></li>
+                        <li><a href="/admin/dashboard/group-role" target="mainFrame"><i class="fas fa-users"></i> Quản lý nhóm/vai trò</a></li>
+                    </ul>
+                </li>
+                <!-- Quản lý đào tạo -->
+                <li class="menu-item has-dropdown">
+                    <a href="#" onclick="toggleDropdown(event, 'edu-dropdown')">
+                        <i class="fas fa-graduation-cap"></i> 
+                        <span>Quản lý đào tạo</span>
+                        <i class="fas fa-angle-down float-end"></i>
+                    </a>
+                    <ul class="submenu" id="edu-dropdown" style="display:none;">
+                        <li><a href="/admin/dashboard/course-management" target="mainFrame"><i class="fas fa-book-open"></i> Khóa học</a></li>
+                        <li><a href="/admin/dashboard/schedule-management" target="mainFrame"><i class="fas fa-calendar-alt"></i> Lịch học/Thời khóa biểu</a></li>
+                        <li><a href="/admin/dashboard/course-register" target="mainFrame"><i class="fas fa-clipboard-list"></i> Đăng ký học</a></li>
+                        <li><a href="/admin/dashboard/teacher-management" target="mainFrame"><i class="fas fa-chalkboard-teacher"></i> Quản lý giảng viên</a></li>
+                        <li><a href="/admin/dashboard/student-management" target="mainFrame"><i class="fas fa-user-graduate"></i> Quản lý học viên</a></li>
+                    </ul>
+                </li>
+                <!-- Báo cáo - Thống kê -->
+                <li class="menu-item has-dropdown">
+                    <a href="#" onclick="toggleDropdown(event, 'report-dropdown')">
+                        <i class="fas fa-chart-line"></i> 
+                        <span>Báo cáo - Thống kê</span>
+                        <i class="fas fa-angle-down float-end"></i>
+                    </a>
+                    <ul class="submenu" id="report-dropdown" style="display:none;">
+                        <li><a href="/admin/dashboard/user-report" target="mainFrame"><i class="fas fa-user"></i> Báo cáo người dùng</a></li>
+                        <li><a href="/admin/dashboard/course-report" target="mainFrame"><i class="fas fa-book"></i> Báo cáo khóa học</a></li>
+                        <li><a href="/admin/dashboard/activity-stat" target="mainFrame"><i class="fas fa-chart-bar"></i> Thống kê hoạt động</a></li>
+                        <li><a href="/admin/dashboard/export-report" target="mainFrame"><i class="fas fa-file-export"></i> Xuất báo cáo (PDF/Excel)</a></li>
+                    </ul>
+                </li>
+                <li class="menu-category"><i class="fas fa-tools"></i> Hệ thống</li>
+                <!-- Quản lý hệ thống -->
+                <li class="menu-item has-dropdown">
+                    <a href="#" onclick="toggleDropdown(event, 'system-dropdown')">
+                        <i class="fas fa-server"></i> 
+                        <span>Quản lý hệ thống</span>
+                        <i class="fas fa-angle-down float-end"></i>
+                    </a>
+                    <ul class="submenu" id="system-dropdown" style="display:none;">
+                        <li><a href="/admin/dashboard/system-config" target="mainFrame"><i class="fas fa-cogs"></i> Cấu hình hệ thống</a></li>
+                        <li><a href="/admin/dashboard/backup-restore" target="mainFrame"><i class="fas fa-database"></i> Sao lưu & khôi phục</a></li>
+                        <li><a href="/admin/dashboard/system-logs" target="mainFrame"><i class="fas fa-file-alt"></i> Quản lý logs hệ thống</a></li>
+                        <li><a href="/admin/dashboard/general-settings" target="mainFrame"><i class="fas fa-sliders-h"></i> Cài đặt chung</a></li>
+                    </ul>
+                </li>
+                <li class="menu-item logout-item">
+                    <a href="/tranning-login">
+                        <i class="fas fa-sign-out-alt"></i> 
+                        <span>Đăng xuất</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content - Cập nhật icon -->
+        <main class="admin-main">
+            <iframe id="mainFrame" name="mainFrame" src="/admin/dashboard/dashboard" style="width:100%;height:calc(100vh - 80px);border:none;background:#f5f7fa;"></iframe>
+        </main>
+    </div>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/chart.min.js"></script>
+    <script src="/js/admin-script.js"></script>
+    <script>
+        // Dropdown toggle logic - chỉ mở 1 dropdown, đóng các dropdown khác
+        function toggleDropdown(event, id) {
+            event.preventDefault();
+            // Đóng tất cả các submenu khác
+            document.querySelectorAll('.submenu').forEach(function(el) {
+                if (el.id !== id) el.style.display = "none";
+            });
+            // Toggle submenu được chọn
+            var el = document.getElementById(id);
+            if (el.style.display === "none" || el.style.display === "") {
+                el.style.display = "block";
+            } else {
+                el.style.display = "none";
+            }
+        }
+
+        // Map hash/page to iframe src
+        var pageMap = {
+            'user-list': '/admin/dashboard/user-list',
+            'user-add': '/admin/dashboard/user-add',
+            'user-edit': '/admin/dashboard/user-edit',
+            'user-role': '/admin/dashboard/user-role',
+            'group-role': '/admin/dashboard/group-role',
+            'course-management': '/admin/dashboard/course-management',
+            'schedule-management': '/admin/dashboard/schedule-management',
+            'course-register': '/admin/dashboard/course-register',
+            'teacher-management': '/admin/dashboard/teacher-management',
+            'student-management': '/admin/dashboard/student-management',
+            'user-report': '/admin/dashboard/user-report',
+            'course-report': '/admin/dashboard/course-report',
+            'activity-stat': '/admin/dashboard/activity-stat',
+            'export-report': '/admin/dashboard/export-report',
+            'system-config': '/admin/dashboard/system-config',
+            'backup-restore': '/admin/dashboard/backup-restore',
+            'system-logs': '/admin/dashboard/system-logs',
+            'general-settings': '/admin/dashboard/general-settings'
+        };
+
+        // Khi click menu, chỉ đổi màu, không reload, không lag
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('a[target="mainFrame"]').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    var href = link.getAttribute('href');
+                    for (var key in pageMap) {
+                        if (pageMap[key] === href) {
+                            window.location.hash = key;
+                            document.getElementById('mainFrame').src = href;
+                            // Không thực hiện bất kỳ hiệu ứng nào, chỉ đổi màu
+                            e.preventDefault();
+                            break;
+                        }
+                    }
+                });
+            });
+
+            // Khi load trang, nếu có hash thì load đúng src
+            function loadFromHash() {
+                var hash = window.location.hash;
+                if (hash) {
+                    var page = hash.replace('#', '');
+                    if (pageMap[page]) {
+                        document.getElementById('mainFrame').src = pageMap[page];
+                    }
+                }
+            }
+            loadFromHash();
+
+            // Khi hash thay đổi (bấm back/forward), cập nhật iframe
+            window.addEventListener('hashchange', loadFromHash);
+        });
+
+        // Highlight sidebar item when iframe src changes
+        function setActiveSidebar(page) {
+            // Xóa active cũ
+            document.querySelectorAll('.sidebar-menu .submenu li a, .dashboard a').forEach(function(link) {
+                link.classList.remove('active');
+            });
+            // Đặt active cho Dashboard nếu là dashboard
+            if (page === 'dashboard') {
+                var dashLink = document.getElementById('dashboard-link');
+                if (dashLink) dashLink.classList.add('active');
+            } else if (page) {
+                var selector = '.sidebar-menu .submenu li a[href$="' + page + '"]';
+                var activeLink = document.querySelector(selector);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+            }
+        }
+
+        // Khi click menu, cập nhật active
+        document.querySelectorAll('a[target="mainFrame"]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                var href = link.getAttribute('href');
+                var page = href.split('/').pop();
+                setActiveSidebar(page);
+            });
+        });
+
+        // When iframe content loads, check for CSRF token in forms
+        document.getElementById('mainFrame').addEventListener('load', function() {
+            try {
+                var iframeDocument = document.getElementById('mainFrame').contentDocument || document.getElementById('mainFrame').contentWindow.document;
+                var forms = iframeDocument.querySelectorAll('form');
+                console.log(`Checking ${forms.length} forms in iframe for CSRF token:`);
+                forms.forEach((form, index) => {
+                    var csrfInput = form.querySelector('input[name="_csrf"]');
+                    if (csrfInput) {
+                        console.log(`Form ${index} (${form.method} ${form.action}): CSRF token input found.`);
+                    } else {
+                        console.log(`Form ${index} (${form.method} ${form.action}): CSRF token input NOT found.`);
+                    }
+                });
+            } catch (e) {
+                console.error("Error accessing iframe content:", e);
+                console.warn("CORS restrictions might be preventing access to iframe content if the origin is different.");
+            }
+             // Highlight sidebar item when iframe src changes
+            updateSidebarActiveFromIframe();
+        });
+
+        // When load lại hoặc hashchange, cập nhật active
+        function updateSidebarActiveFromIframe() {
+            var src = document.getElementById('mainFrame').contentWindow.location.pathname;
+            var page = src.split('/').pop();
+            setActiveSidebar(page);
+        }
+        document.getElementById('mainFrame').addEventListener('load', updateSidebarActiveFromIframe);
+
+        // Khi load trang lần đầu
+        window.addEventListener('DOMContentLoaded', function() {
+            var src = document.getElementById('mainFrame').getAttribute('src');
+            var page = src.split('/').pop();
+            setActiveSidebar(page);
+        });
+    </script>
+</body>
+</html>
