@@ -31,7 +31,7 @@ public class DataLoader {
                 userService.createUser(
                     "viu106018",
                     passwordEncoder.encode("vui106018"),
-                    "ADMIN",
+                    "ROLE_ADMIN",
                     "viu106018@donga.edu.vn",
                     "0367604684",
                     null // Added null for imageUrl
@@ -46,7 +46,7 @@ public class DataLoader {
                 userService.createUser(
                     "viu852005",
                     passwordEncoder.encode("rmahviu@852005"),
-                    "ADMIN",
+                    "ROLE_ADMIN",
                     "viuadmin@donga.edu.vn",
                     "0367604685",
                     null // Added null for imageUrl
@@ -61,7 +61,7 @@ public class DataLoader {
                 userService.createUser(
                     "temp_admin",
                     passwordEncoder.encode("password"),
-                    "ADMIN",
+                    "ROLE_ADMIN",
                     "temp.admin@example.com",
                     null, // phone là tùy chọn
                     null // Added null for imageUrl
