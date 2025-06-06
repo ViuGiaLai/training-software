@@ -5,11 +5,10 @@
 -- 1. Giảng viên (users_teachers)
 INSERT INTO users_teachers (
     id, avatar, created_at, degree, department, email, full_name,
-    position, status, username, degree_id, department_id, position_id,
-    password, role, phone
+    position, status, username, password, role, phone
 ) VALUES
-    (3, 'https://moc247.com/wp-content/uploads/2023/12/loa-mat-voi-101-hinh-anh-avatar-meo-cute-dang-yeu-dep-mat_1-1.jpg', '2025-06-01', 'Thạc sĩ', 'Tổ Văn', 'rmahviu@tranning.edu.vn', 'Rmah Viu', 'Giáo viên', 'Đang công tác', 'rmahviu123', NULL, NULL, NULL, '$2a$10$KwUsWOnG1jCnbwvEJZx87OGtkuYnExFRXKkvaegyy.Ggo3n.VXwye', 'TEACHER', NULL),
-    (4, 'https://moc247.com/wp-content/uploads/2023/12/loa-mat-voi-101-hinh-anh-avatar-meo-cute-dang-yeu-dep-mat_2.jpg', '2025-06-01', 'Tiến sĩ', 'Tổ Lý', 'hoaianhgv@tranning.edu.vn', 'Nguễn Thi Hoài Trang', 'Hiệu trưởng', 'Đang công tác', 'hoaianhgv', NULL, NULL, NULL, '$2a$10$sVl0dJbo5uYPGCsopYo/8e7y0cfU.o686lvnA2pBc4p9z6a/99NoO', 'TEACHER', NULL);
+    (3, 'https://moc247.com/wp-content/uploads/2023/12/loa-mat-voi-101-hinh-anh-avatar-meo-cute-dang-yeu-dep-mat_1-1.jpg', '2025-06-01', 'Thạc sĩ', 'Tổ Văn', 'rmahviu@tranning.edu.vn', 'Rmah Viu', 'Giáo viên', 'Đang công tác', 'rmahviu123', '$2a$10$KwUsWOnG1jCnbwvEJZx87OGtkuYnExFRXKkvaegyy.Ggo3n.VXwye', 'TEACHER', NULL),
+    (4, 'https://moc247.com/wp-content/uploads/2023/12/loa-mat-voi-101-hinh-anh-avatar-meo-cute-dang-yeu-dep-mat_2.jpg', '2025-06-01', 'Tiến sĩ', 'Tổ Lý', 'hoaianhgv@tranning.edu.vn', 'Nguễn Thi Hoài Trang', 'Hiệu trưởng', 'Đang công tác', 'hoaianhgv', '$2a$10$sVl0dJbo5uYPGCsopYo/8e7y0cfU.o686lvnA2pBc4p9z6a/99NoO', 'TEACHER', NULL);
 
 -- 2. Quản trị viên (users_admin)
 INSERT INTO users_admin (
