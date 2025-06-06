@@ -35,7 +35,8 @@ public class UserService {
             String password,
             String role,
             String email,
-            String phone) {
+            String phone,
+            String imageUrl) {
 
         String encodedPassword = passwordEncoder.encode(password);
 
@@ -46,6 +47,7 @@ public class UserService {
             admin.setRole("ADMIN");
             admin.setEmail(email);
             admin.setPhone(phone);
+            admin.setImageUrl(imageUrl);
             usersAdminRepository.save(admin);
         } else if ("TEACHER".equals(role)) {
             UsersTeachers teacher = new UsersTeachers();
@@ -68,6 +70,32 @@ public class UserService {
         } else {
             throw new IllegalArgumentException("Invalid role specified: " + role);
         }
+    }
+
+    // Method to find an admin user by username
+    public UsersAdmin findAdminByUsername(String username) {
+        return usersAdminRepository.findByUsername(username);
+    }
+
+    // Method to update an admin user's profile
+    @Transactional // Ensure the operation is atomic
+    public UsersAdmin updateAdminUser(Long id, String email, String phone, String imageUrl) {
+        UsersAdmin admin = usersAdminRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Admin user not found with id: " + id));
+
+        if (email != null && !email.isEmpty()) {
+            admin.setEmail(email);
+        }
+        if (phone != null && !phone.isEmpty()) {
+            admin.setPhone(phone);
+        }
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            admin.setImageUrl(imageUrl);
+        } else if (imageUrl != null && imageUrl.isEmpty()) { // Case where image is cleared (if applicable)
+             admin.setImageUrl(null);
+        }
+
+        return usersAdminRepository.save(admin);
     }
 
     // You might want to add methods here to check for existing users by username, email, or phone

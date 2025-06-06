@@ -30,6 +30,8 @@ public class UsersAdmin {
     @Column(unique = true)
     private String phone;
 
+    private String imageUrl; // Field to store the profile image URL
+
     public UsersAdmin() {
     }
 
@@ -79,5 +81,14 @@ public class UsersAdmin {
     
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    // Getter and Setter for imageUrl
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

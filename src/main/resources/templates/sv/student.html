@@ -4,31 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Học Sinh Đại Học Training</title>
-    <link rel="icon" href="/images/logo_tranning_learning.png" type="image/x-icon">
+    <link rel="icon" href="/images/logo_training_learning.png" type="image/x-icon">
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/header.css">
     <!-- ======== link icon fontawesome ======== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-
     <!-- ======== Header chính ======== -->
     <header class="main-header">
         <nav class="navbar navbar-expand-lg navbar-dark bg-success px-3 student-navbar">
             <!-- Avatar Học Sinh -->
-            <img src="/images/avatar.png" alt="Avatar" class="rounded-circle student-avatar me-3" width="40" height="40" />
-            
+            <img th:src="${student != null and !#strings.isEmpty(student.avatarUrl) ? student.avatarUrl : '/images/avatar-default.png'}"
+                 src="/images/avatar-default.png"
+                 alt="Avatar"
+                 class="rounded-circle student-avatar me-3"
+                 style="width:48px;height:48px;object-fit:cover;border:2px solid #ffc107;" />
             <!-- Hamburger menu button for mobile -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <i class="fa-solid fa-bars"></i>
             </button>
+           
 
             <!-- Danh sách menu chính -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav flex-row flex-lg-row flex-column student-menu">
                     <!-- Menu: Thông báo -->
                     <li class="nav-item dropdown me-3 student-menu__item">
-                        <a class="nav-link dropdown-toggle text-white" href="/sv/thong-bao" data-bs-toggle="dropdown">Thông báo</a>
+                        <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Thông báo</a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/sv/thoi-khoa-bieu">Thời khóa biểu</a></li>
                             <li><a class="dropdown-item" href="/sv/lich-thi">Lịch thi học phần</a></li>
@@ -38,7 +41,7 @@
 
                     <!-- Menu: Đánh giá -->
                     <li class="nav-item dropdown me-3 student-menu__item">
-                        <a class="nav-link dropdown-toggle text-white" href="/sv/danh-gia" data-bs-toggle="dropdown">Đánh giá</a>
+                        <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Đánh giá</a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/sv/danh-gia-gv">Đánh giá giảng viên</a></li>
                             <li><a class="dropdown-item" href="/sv/danh-gia-lop-hoc">Đánh giá lớp học</a></li>
@@ -48,7 +51,7 @@
 
                     <!-- Menu: Thông tin lớp -->
                     <li class="nav-item dropdown me-3 student-menu__item">
-                        <a class="nav-link dropdown-toggle text-white" href="/sv/thong-tin-lop" data-bs-toggle="dropdown">Thông tin Lớp</a>
+                        <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Thông tin Lớp</a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/sv/lich-hoc">Lịch học</a></li>
                             <li><a class="dropdown-item" href="/sv/danh-sach-lop">Danh sách lớp</a></li>
@@ -57,9 +60,9 @@
 
                     <!-- Menu: Góc Học Sinh -->
                     <li class="nav-item dropdown me-3 student-menu__item">
-                        <a class="nav-link dropdown-toggle text-white" href="/sv/goc-sinh-vien" data-bs-toggle="dropdown">Góc Học Sinh</a>
+                        <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Góc Học Sinh</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/sv/thong-tin-sinhvien">Thông tin cá nhân</a></li>
+                            <li><a class="dropdown-item" href="/sv/thong-tin-ca-nhan">Thông tin cá nhân</a></li>
                             <li><a class="dropdown-item" href="/sv/diem-so">Điểm số</a></li>
                             <li><a class="dropdown-item" href="/sv/hoc-phi">Học phí</a></li>
                         </ul>
@@ -71,7 +74,7 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/sv/cai-dat">Cài đặt</a></li>
                             <li><a class="dropdown-item" href="/sv/doi-mat-khau">Đổi mật khẩu</a></li>
-                            <li><a class="dropdown-item" href="/tranning-login">Đăng xuất</a></li>
+                            <li><a class="dropdown-item" href="/training-login">Đăng xuất</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -79,7 +82,75 @@
         </nav>
     </header>
 
-    <!-- Bootstrap JS -->
+    <!-- Nội dung động -->
+    <main style="min-height:80vh;">
+        <iframe id="mainFrame" name="mainFrame"
+            th:src="${iframePath != null} ? ${iframePath} : '/sv/thoi-khoa-bieu'"
+            src="/sv/thoi-khoa-bieu"
+            style="width:100%;min-height:80vh;border:none;"></iframe>
+    </main>
+
     <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Lấy iframePath từ query string (nếu có)
+        function getIframePathFromQuery() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('iframePath');
+        }
+        // Nếu có iframePath trên URL, load vào iframe
+        const iframePath = getIframePathFromQuery();
+        if (iframePath) {
+            document.getElementById('mainFrame').src = iframePath;
+            // Xóa query string khỏi URL sau khi load (tùy chọn)
+            history.replaceState({}, '', window.location.pathname);
+        }
+
+        // Map menu path to nội dung
+        const menuMap = {
+            '/sv/thoi-khoa-bieu': '/sv/thoi-khoa-bieu',
+            '/sv/lich-thi': '/sv/lich-thi',
+            '/sv/danh-sach-lop': '/sv/danh-sach-lop',
+            '/sv/thong-tin-sinhvien': '/sv/thong-tin-ca-nhan',
+            //   '/sv/thong-bao': '/sv/thong-bao',
+            // '/sv/thoi-khoa-bieu': '/sv/thoi-khoa-bieu',
+            // '/sv/lich-thi': '/sv/lich-thi',
+            // '/sv/danh-sach-lop': '/sv/danh-sach-lop',
+            '/sv/danh-gia-lop-hoc': '/sv/danh-gia-lop-hoc',
+            '/sv/ket-qua-hoc-tap': '/sv/ket-qua-hoc-tap',
+            '/sv/lich-hoc': '/sv/lich-hoc',
+            '/sv/diem-so': '/sv/diem-so',
+            '/sv/hoc-phi': '/sv/hoc-phi',
+            '/sv/cai-dat': '/sv/cai-dat',
+            '/sv/doi-mat-khau': '/sv/doi-mat-khau'
+        };
+
+        // Khi click menu, load vào iframe và đổi URL
+        document.querySelectorAll('.student-menu__item .dropdown-item, .student-menu__item .nav-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                var href = link.getAttribute('href');
+                if (href && href.startsWith('/sv/')) {
+                    e.preventDefault();
+                    document.getElementById('mainFrame').src = href;
+                    history.pushState({iframe: href}, '', href);
+                }
+            });
+        });
+
+        // Khi bấm back/forward hoặc load lại, tự động load đúng nội dung vào iframe
+        window.addEventListener('popstate', function(event) {
+            var path = window.location.pathname;
+            if (menuMap[path]) {
+                document.getElementById('mainFrame').src = menuMap[path];
+            }
+        });
+
+        // Khi load trang, nếu không phải /sv/student thì load đúng nội dung
+        document.addEventListener('DOMContentLoaded', function() {
+            var path = window.location.pathname;
+            if (menuMap[path]) {
+                document.getElementById('mainFrame').src = menuMap[path];
+            }
+        });
+    </script>
 </body>
 </html>

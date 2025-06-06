@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thời khóa biểu tuần</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <style>
+        .tkb-table th, .tkb-table td { text-align: center; vertical-align: middle; }
+        .tkb-cell { background: #e3f2fd; border-radius: 6px; padding: 6px; margin: 2px; }
+        .tkb-cell strong { color: #1976d2; }
+        .tkb-table { width: 100%; table-layout: auto; }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h3 class="mb-3">Thời khóa biểu tuần 
+        <span th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')}"></span> - 
+        <span th:text="${#temporals.format(weekEnd, 'dd/MM/yyyy')}"></span>
+    </h3>
+    <div th:if="${noSchedule != null}" class="alert alert-warning text-center" th:text="${noSchedule}"></div>
+    <table class="table table-bordered tkb-table" th:if="${noSchedule == null}">
+        <thead class="table-primary">
+            <tr>
+                <th>Tiết</th>
+                <th th:each="i : ${#numbers.sequence(0,6)}">
+                    <span th:text="${#temporals.format(weekStart.plusDays(i), 'EEEE')}"></span><br>
+                    <span th:text="${#temporals.format(weekStart.plusDays(i), 'dd/MM/yyyy')}"></span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="period : ${periods}">
+                <td>
+                    <div th:text="${period.name}"></div>
+                    <div class="text-muted small" th:text="${period.startTime} + ' - ' + ${period.endTime}"></div>
+                </td>
+                <td th:each="i : ${#numbers.sequence(0,6)}">
+                    <th:block th:with="cellDate=${weekStart.plusDays(i)}">
+                        <div th:each="schedule : ${schedules}">
+                            
+                            <div th:if="${schedule.period != null 
+                                         and schedule.period.id == period.id 
+                                         and schedule.date != null 
+                                         and schedule.date.toString() == cellDate.toString()}"
+                                 class="tkb-cell">
+                                <strong th:text="${schedule.subject != null ? 'Môn: ' + schedule.subject.name : ''}"></strong><br>
+                                <span th:text="${schedule.teacher != null ? 'GV: ' + schedule.teacher.fullName : ''}"></span><br>
+                                <span th:text="${schedule.room != null ? schedule.room.name : ''}"></span>
+                            </div>
+                        </div>
+                    </th:block>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

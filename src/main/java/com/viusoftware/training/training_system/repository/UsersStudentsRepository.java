@@ -6,11 +6,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface UsersStudentsRepository extends JpaRepository<UsersStudents, Long> {
     UsersStudents findByUsername(String username);
-    
+
     @Query("SELECT u FROM UsersStudents u WHERE u.username = :input OR u.email = :input OR u.phone = :input")
     UsersStudents findByUsernameOrEmailOrPhone(@Param("input") String input);
-    // Có thể thêm các phương thức tìm kiếm tùy ý nếu cần
+
+    // Lấy danh sách học sinh theo classRoom id
+    List<UsersStudents> findByClassRoom_Id(Long classRoomId);
 }

@@ -30,8 +30,7 @@ import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
-
+public class SecurityConfig  {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final CustomUserDetailsService customUserDetailsService;
@@ -61,32 +60,31 @@ public class SecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .ignoringRequestMatchers("/api/**")
             )
+            .sessionManagement(session -> session
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(true) // Đổi thành true: không cho phép đăng nhập mới khi đã có session
+            )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/tranning-login", "/css/**", "/images/**", "/js/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/training-login", "/css/**", "/images/**", "/js/**", "/error").permitAll()
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER") // Sửa lại: cho phép cả ADMIN và MANAGER
+                .requestMatchers("/teacher/**").hasRole("TEACHER")
+                .requestMatchers("/gv/**").hasRole("TEACHER")
+                .requestMatchers("/sv/**").hasRole("STUDENT")
+                .requestMatchers("/admin/dashboard/classroom/**").hasAnyRole("ADMIN", "MANAGER")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-                .loginPage("/tranning-login")
-                .loginProcessingUrl("/tranning-login")
+                .loginPage("/training-login")
+                .loginProcessingUrl("/training-login")
                 .successHandler(customSuccessHandler())
                 .failureHandler(customFailureHandler())
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutUrl("/tranning-logout")
-                .logoutSuccessUrl("/tranning-login?logout")
+                .logoutUrl("/training-logout")
+                .logoutSuccessUrl("/training-login?logout")
                 .permitAll()
-            )
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((request, response, authException) -> {
-                    logger.warn("Unauthorized access attempt to {}", request.getRequestURI());
-                    String message = "Bạn cần đăng nhập để truy cập trang này";
-                    String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8);
-                    response.sendRedirect("/tranning-login?error=true&message=" + encodedMessage);
-                })
             );
-
         return http.build();
     }
 
@@ -135,7 +133,7 @@ public class SecurityConfig {
                 }
 
                 String encodedMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
-                getRedirectStrategy().sendRedirect(request, response, "/tranning-login?error=true&message=" + encodedMessage);
+                getRedirectStrategy().sendRedirect(request, response, "/training-login?error=true&message=" + encodedMessage);
             }
         };
     }

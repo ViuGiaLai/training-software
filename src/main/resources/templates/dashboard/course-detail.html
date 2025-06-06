@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết khóa học</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/course-detail.css">
+</head>
+<body>
+<div class="container py-4">
+    <h2>Chi tiết khóa học</h2>
+    <table class="table table-bordered">
+        <tr><th>Tên khóa học</th><td th:text="${course.name}"></td></tr>
+        <tr><th>Khối</th><td th:text="${course.grade}"></td></tr>
+        <tr><th>Môn</th><td th:text="${course.subject}"></td></tr>
+        <tr><th>Giáo viên</th><td th:text="${course.teacherName}"></td></tr>
+        <tr><th>Số học sinh</th><td th:text="${course.studentCount}"></td></tr>
+        <tr><th>Tiết/tuần</th><td th:text="${course.periodsPerWeek}"></td></tr>
+        <tr><th>Mô tả</th><td th:text="${course.description}"></td></tr>
+    </table>
+    <a href="/admin/dashboard/course-management" class="btn btn-secondary">Quay lại</a>
+</div>
+</body>
+</html>

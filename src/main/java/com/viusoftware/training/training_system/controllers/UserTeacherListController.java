@@ -75,12 +75,13 @@ public class UserTeacherListController {
             teacher.setDegree(degree);
             teacher.setStatus(status);
             teacher.setAvatar(avatar);
-            teacher.setCreatedAt(LocalDate.now());
+            teacher.setCreatedAt(java.time.LocalDate.now());
             teacher.setPassword(passwordEncoder.encode(password));
             teacher.setRole("TEACHER");
             usersTeachersRepository.save(teacher);
             return "redirect:/admin/dashboard/users/user-teacher-list";
         } catch (Exception ex) {
+            ex.printStackTrace(); // Thêm dòng này để log lỗi ra console
             return "redirect:/admin/dashboard/users/user-teacher-list?error=add";
         }
     }

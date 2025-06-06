@@ -8,7 +8,7 @@
     <!-- Sử dụng Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/admin-style.css">
-    <link rel="icon" href="/images/logo_tranning_learning.png" type="image/x-icon">
+    <link rel="icon" href="/images/logo_training_learning.png" type="image/x-icon">
     <style>
         /* Đảm bảo flexbox hoạt động tốt khi sidebar dài */
         .admin-container {
@@ -55,12 +55,12 @@
                     <!-- User dropdown -->
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="/images/avatar.png" alt="Avatar" class="user-avatar me-2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:#f2f2f2;">
-                            <span class="fw-semibold" style="color:#222;">Admin User</span>
+                            <img th:src="${currentUser.imageUrl != null ? currentUser.imageUrl : '/images/avatar.png'}" alt="Avatar" class="user-avatar me-2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:#f2f2f2;">
+                            <span class="fw-semibold" style="color:#222;" th:text="${currentUser.username}">Admin User</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
                             <li>
-                                <a class="dropdown-item" href="/admin/dashboard/profile">
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userInfoModal" id="userInfoLink">
                                     <i class="fas fa-user-circle me-2"></i>Thông tin cá nhân
                                 </a>
                             </li>
@@ -71,7 +71,7 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="/tranning-login">
+                                <a class="dropdown-item text-danger" href="/training-login">
                                     <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
                                 </a>
                             </li>
@@ -84,7 +84,7 @@
         <!-- Sidebar - Cập nhật tất cả icon -->
         <aside class="admin-sidebar">
             <div class="sidebar-header">
-                <img src="/images/logo_tranning_learning.png" alt="Logo" class="sidebar-logo">
+                <img src="/images/logo_training_learning.png" alt="Logo" class="sidebar-logo">
                 <h3>Trung tâm Đào tạo</h3>
             </div>
             <div class="dashboard">
@@ -113,8 +113,11 @@
                     </a>
                     <ul class="submenu" id="edu-dropdown" style="display:none;">
                         <li><a href="/admin/dashboard/course-management" target="mainFrame"><i class="fas fa-book-open"></i> Khóa học</a></li>
+                        <li><a href="/admin/dashboard/exam-management" target="mainFrame"><i class="fas fa-calendar-alt"></i> Lịch thi </a></li>
                         <li><a href="/admin/dashboard/schedule-management" target="mainFrame"><i class="fas fa-calendar-alt"></i> Lịch học/Thời khóa biểu</a></li>
+                        <li><a href="/admin/dashboard/classroom" target="mainFrame"><i class="fas fa-chalkboard"></i> Lớp học</a></li>
                         <li><a href="/admin/dashboard/course-register" target="mainFrame"><i class="fas fa-clipboard-list"></i> Đăng ký học</a></li>
+                        <li><a href="/admin/dashboard/class-assignment" target="mainFrame"><i class="fas fa-chalkboard-teacher"></i> Phân công giảng viên</a></li>
                         <li><a href="/admin/dashboard/teacher-management" target="mainFrame"><i class="fas fa-chalkboard-teacher"></i> Quản lý giảng viên</a></li>
                         <li><a href="/admin/dashboard/student-management" target="mainFrame"><i class="fas fa-user-graduate"></i> Quản lý học viên</a></li>
                     </ul>
@@ -149,7 +152,7 @@
                     </ul>
                 </li>
                 <li class="menu-item logout-item">
-                    <a href="/tranning-login">
+                    <a href="/training-login">
                         <i class="fas fa-sign-out-alt"></i> 
                         <span>Đăng xuất</span>
                     </a>
@@ -193,8 +196,10 @@
             'group-role': '/admin/dashboard/group-role',
             'course-management': '/admin/dashboard/course-management',
             'schedule-management': '/admin/dashboard/schedule-management',
+            'classroom': '/admin/dashboard/classroom',
             'course-register': '/admin/dashboard/course-register',
             'teacher-management': '/admin/dashboard/teacher-management',
+            'class-assignment': '/admin/dashboard/class-assignment',
             'student-management': '/admin/dashboard/student-management',
             'user-report': '/admin/dashboard/user-report',
             'course-report': '/admin/dashboard/course-report',
@@ -303,6 +308,122 @@
             var page = src.split('/').pop();
             setActiveSidebar(page);
         });
+
+        /*<![CDATA[*/
+        const currentAdminUsername = '[[${currentUser.username}]]'; // Using single quotes for string literal
+        const currentUserId = '[[${currentUser.id}]]'; // Get user ID from Thymeleaf model
+        /*]]>*/
+
+        document.getElementById('userInfoLink').addEventListener('click', function(event) {
+            // Fetch user data when the modal is about to be shown
+            fetch(`/admin/users/${currentAdminUsername}`)
+                .then(response => response.json())
+                .then(data => {
+                    const avatarModalImg = document.getElementById('modalUserAvatar');
+                    const imageUrl = data.imageUrl ? data.imageUrl : '/images/avatar.png';
+                    // Add timestamp to image URL to prevent caching
+                    avatarModalImg.src = imageUrl + '?timestamp=' + new Date().getTime();
+
+                    document.getElementById('modalEmail').value = data.email ? data.email : '';
+                    document.getElementById('modalPhone').value = data.phone ? data.phone : '';
+                    document.getElementById('modalUserId').value = data.id;
+                    document.getElementById('modalImageUrl').value = data.imageUrl ? data.imageUrl : ''; // Populate image URL input
+                    // Populate other input fields if needed
+                })
+                .catch(error => {
+                    console.error('Error fetching user data:', error);
+                    // Optionally display an error message in the modal
+                });
+        });
+
+        // Handle form submission for updating user info
+        document.getElementById('userInfoForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const form = event.target;
+            // const formData = new FormData(form); // No longer need FormData for file upload
+            const formData = new URLSearchParams(); // Use URLSearchParams for simple key-value pairs
+
+            // Collect form data (excluding file input)
+            formData.append('id', document.getElementById('modalUserId').value);
+            formData.append('email', document.getElementById('modalEmail').value);
+            formData.append('phone', document.getElementById('modalPhone').value);
+            formData.append('imageUrl', document.getElementById('modalImageUrl').value); // Get value from text input
+
+            fetch('/admin/update-profile', {
+                method: 'POST',
+                headers: { // Add headers for URLSearchParams
+                     'Content-Type': 'application/x-www-form-urlencoded'
+                 },
+                body: formData // Send form data
+            })
+            .then(response => response.text()) // Expect text response (success or error message)
+            .then(result => {
+                console.log('Update result:', result);
+                // Display a success or error message (you might want a dedicated area in the modal)
+                alert(result); // Simple alert for now
+
+                // If update is successful, update the header avatar and reload
+                if (result.includes('successfully')) {
+                    const newImageUrl = document.getElementById('modalImageUrl').value;
+                    const headerAvatarImg = document.querySelector('.admin-topnav .user-avatar');
+                     if (headerAvatarImg) {
+                         // Update header avatar src with new URL and timestamp
+                         headerAvatarImg.src = (newImageUrl ? newImageUrl : '/images/avatar.png') + '?timestamp=' + new Date().getTime();
+                     }
+
+                    const modalElement = document.getElementById('userInfoModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    modal.hide();
+
+                    // Optional: Reload the page or update the displayed info after successful update
+                    // location.reload(); // Keep or remove depending on desired user experience
+                }
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                alert('An error occurred while updating the profile.'); // Show generic error
+            });
+        });
     </script>
+
+    <!-- User Info Modal -->
+    <div class="modal fade" id="userInfoModal" tabindex="-1" aria-labelledby="userInfoModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="userInfoModalLabel">Thông tin cá nhân</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="userInfoForm"> <!-- Form for submitting changes -->
+            <div class="modal-body">
+              <div class="text-center mb-4">
+                <img id="modalUserAvatar" th:src="${currentUser.imageUrl != null ? currentUser.imageUrl : '/images/avatar.png'}" alt="Avatar" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                <!-- Input for image URL -->
+                 <div class="mb-3">
+                    <label for="modalImageUrl" class="form-label">Link ảnh đại diện (Optional):</label>
+                    <input type="text" class="form-control" id="modalImageUrl" name="imageUrl" placeholder="Enter image URL">
+                 </div>
+                <h5 id="modalUsername" th:text="${currentUser.username}"></h5> <!-- Username displayed but not editable in this basic form -->
+              </div>
+              <div class="mb-3">
+                <label for="modalEmail" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="modalEmail" name="email">
+              </div>
+              <div class="mb-3">
+                <label for="modalPhone" class="form-label">Số điện thoại:</label>
+                <input type="text" class="form-control" id="modalPhone" name="phone">
+              </div>
+              <!-- Add other relevant input fields here -->
+               <input type="hidden" id="modalUserId" name="id" th:value="${currentUser.id}"> <!-- Hidden field for user ID -->
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+              <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 </body>
 </html>

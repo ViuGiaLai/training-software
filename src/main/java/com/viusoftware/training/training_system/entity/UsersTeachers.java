@@ -10,27 +10,22 @@ public class UsersTeachers {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String fullName;
-
-    @Column(nullable = false, unique = true)
     private String username;
-
-    @Column(unique = true)
     private String email;
+    private String password;
+    private String role;
 
-    @Column(unique = true)
+    // Bổ sung trường phone
     private String phone;
 
-    private String status;
+    // Bổ sung các trường còn thiếu
     private String avatar;
-    private LocalDate createdAt;
-
-    private String department;
     private String position;
     private String degree;
-    private String password;
-    private String role; // thêm dòng này
+    private String department;
+    private String status;
+    private LocalDate createdAt;
 
     // Getters and setters
     public Long getId() { return id; }
@@ -45,48 +40,32 @@ public class UsersTeachers {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
 
     public String getAvatar() { return avatar; }
     public void setAvatar(String avatar) { this.avatar = avatar; }
 
-    public LocalDate getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
-
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
     public String getPosition() { return position; }
-    public void setPosition(String position) {
-        this.position = position;
-    }
+    public void setPosition(String position) { this.position = position; }
 
     public String getDegree() { return degree; }
-    public void setDegree(String degree) {
-        this.degree = degree;
-    }
+    public void setDegree(String degree) { this.degree = degree; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
+    public LocalDate getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
 }
 
 // Make sure you do NOT have @Data or @ToString/@EqualsAndHashCode if you have relationships

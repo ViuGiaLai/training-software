@@ -1,304 +1,182 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách khóa học - Hệ thống quản lý đại học tranning</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Quản lý khóa học</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b">
-        <div class="flex items-center justify-between px-6 py-4">
-            <div class="flex items-center space-x-4">
-                <a href="../dashboard/admin.html" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <h1 class="text-xl font-semibold text-gray-900">Quản lý khóa học</h1>
-            </div>
-            
-            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2">
-                <i class="fas fa-plus"></i>
-                <span>Thêm khóa học</span>
-            </button>
+<body>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản lý khóa học</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+            <i class="fas fa-plus me-2"></i>Thêm khóa học
+        </button>
+    </div>
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Tên khóa học</th>
+                <th>Khối</th>
+                <th>Giáo viên</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${courses}">
+                <td th:text="${c.name}"></td>
+                <!-- Nếu classRoom không tồn tại hoặc không chắc chắn, bỏ dòng này -->
+                <!-- <td th:text="${c.classRoom != null ? c.classRoom.grade : ''}"></td> -->
+                <td th:text="${c.teacher != null ? c.teacher.fullName : ''}"></td>
+                <td>
+                    <a th:href="@{/admin/dashboard/course-management/detail(id=${c.id})}" class="btn btn-info btn-sm">Chi tiết</a>
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" th:attr="data-bs-target='#editCourseModal'+${c.id}">Sửa</button>
+                    <form th:action="@{/admin/dashboard/course-management/delete}" method="post" style="display:inline;">
+                        <input type="hidden" name="id" th:value="${c.id}">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xóa khóa học này?')">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(courses)}">
+                <td colspan="4" class="text-center text-muted">Không có khóa học nào</td>
+            </tr>
+        </tbody>
+    </table>
+    <!-- Modal Thêm -->
+    <div class="modal fade" id="addCourseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form th:action="@{/admin/dashboard/course-management/add}" method="post" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm khóa học</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Tên khóa học</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Lớp</label>
+                        <select name="classRoomId" class="form-select" id="add-classRoomSelect" required onchange="updateClassInfo('add')">
+                            <option value="">-- Chọn lớp --</option>
+                            <option th:each="cl : ${classRooms}" th:value="${cl.id}" th:text="${cl.name}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Khối</label>
+                        <input type="text" class="form-control" id="add-grade" readonly>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Giáo viên</label>
+                        <select name="teacherId" class="form-select" required>
+                            <option value="">-- Chọn giáo viên --</option>
+                            <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Mô tả</label>
+                        <textarea name="description" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm</button>
+                </div>
+            </form>
         </div>
-    </header>
-
-    <div class="p-6">
-        <!-- Filters and Search -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input 
-                            type="text" 
-                            placeholder="Tìm kiếm khóa học..."
-                            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-80"
-                        >
+    </div>
+    <!-- Modal Sửa cho từng course -->
+    <div th:each="c : ${courses}">
+        <div class="modal fade" th:id="'editCourseModal'+${c.id}" tabindex="-1">
+            <div class="modal-dialog">
+                <form th:action="@{/admin/dashboard/course-management/edit}" method="post" class="modal-content">
+                    <input type="hidden" name="id" th:value="${c.id}">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Sửa khóa học</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    
-                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option>Tất cả khối</option>
-                        <option>Khối 10</option>
-                        <option>Khối 11</option>
-                        <option>Khối 12</option>
-                    </select>
-                    
-                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option>Tất cả môn học</option>
-                        <option>Toán</option>
-                        <option>Vật lý</option>
-                        <option>Hóa học</option>
-                        <option>Sinh học</option>
-                        <option>Văn</option>
-                        <option>Sử</option>
-                        <option>Địa</option>
-                    </select>
-                </div>
-                
-                <div class="flex items-center space-x-2">
-                    <button class="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                        <i class="fas fa-filter"></i>
-                    </button>
-                    <button class="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                        <i class="fas fa-download"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Courses Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Course Card 1 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                    <i class="fas fa-calculator text-white text-4xl"></i>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Khối 12</span>
-                        <span class="text-sm text-gray-500">45 học sinh</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Toán học nâng cao</h3>
-                    <p class="text-gray-600 text-sm mb-4">Khóa học toán nâng cao dành cho học sinh khối 12, chuẩn bị thi đại học</p>
-                    
-                    <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-user"></i>
-                            <span>GV. Nguyễn Văn A</span>
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label class="form-label">Tên khóa học</label>
+                            <input type="text" name="name" class="form-control" th:value="${c.name}" required>
                         </div>
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-clock"></i>
-                            <span>3 tiết/tuần</span>
+                        <div class="mb-2">
+                            <label class="form-label">Lớp</label>
+                            <select name="classRoomId" class="form-select edit-classRoomSelect" th:attr="data-cid=${c.id}" required onchange="updateClassInfo('edit', [[${c.id}]])">
+                                <option value="">-- Chọn lớp --</option>
+                                <option th:each="cl : ${classRooms}" th:value="${cl.id}" th:text="${cl.name}" th:selected="${cl.id == c.classRoom?.id}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Khối</label>
+                            <input type="text" class="form-control" th:id="'edit-grade-'+${c.id}" th:value="${c.classRoom?.grade}" readonly>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Giáo viên</label>
+                            <select name="teacherId" class="form-select" required>
+                                <option value="">-- Chọn giáo viên --</option>
+                                <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}" th:selected="${t.id == c.teacher?.id}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Mô tả</label>
+                            <textarea name="description" class="form-control" th:text="${c.description}"></textarea>
                         </div>
                     </div>
-                    
-                    <div class="flex space-x-2">
-                        <button class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 text-sm">
-                            Xem chi tiết
-                        </button>
-                        <button class="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                            <i class="fas fa-edit"></i>
-                        </button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
                     </div>
-                </div>
-            </div>
-
-            <!-- Course Card 2 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                    <i class="fas fa-atom text-white text-4xl"></i>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Khối 11</span>
-                        <span class="text-sm text-gray-500">38 học sinh</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Vật lý cơ bản</h3>
-                    <p class="text-gray-600 text-sm mb-4">Khóa học vật lý cơ bản cho học sinh khối 11, tập trung vào cơ học và nhiệt học</p>
-                    
-                    <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-user"></i>
-                            <span>GV. Trần Thị B</span>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-clock"></i>
-                            <span>4 tiết/tuần</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-2">
-                        <button class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 text-sm">
-                            Xem chi tiết
-                        </button>
-                        <button class="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Course Card 3 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                    <i class="fas fa-flask text-white text-4xl"></i>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Khối 10</span>
-                        <span class="text-sm text-gray-500">42 học sinh</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Hóa học cơ bản</h3>
-                    <p class="text-gray-600 text-sm mb-4">Khóa học hóa học cơ bản cho học sinh mới vào lớp 10, làm quen với hóa học</p>
-                    
-                    <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-user"></i>
-                            <span>GV. Lê Văn C</span>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-clock"></i>
-                            <span>3 tiết/tuần</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-2">
-                        <button class="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">
-                            Xem chi tiết
-                        </button>
-                        <button class="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Course Card 4 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
-                    <i class="fas fa-book-open text-white text-4xl"></i>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Khối 12</span>
-                        <span class="text-sm text-gray-500">35 học sinh</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Ngữ văn nâng cao</h3>
-                    <p class="text-gray-600 text-sm mb-4">Khóa học văn học nâng cao, phân tích tác phẩm và luyện thi đại học</p>
-                    
-                    <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-user"></i>
-                            <span>GV. Phạm Thị D</span>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-clock"></i>
-                            <span>5 tiết/tuần</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-2">
-                        <button class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 text-sm">
-                            Xem chi tiết
-                        </button>
-                        <button class="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Course Card 5 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
-                    <i class="fas fa-globe text-white text-4xl"></i>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Khối 11</span>
-                        <span class="text-sm text-gray-500">40 học sinh</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Địa lý tự nhiên</h3>
-                    <p class="text-gray-600 text-sm mb-4">Khóa học địa lý tự nhiên, tìm hiểu về khí hậu và địa hình thế giới</p>
-                    
-                    <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-user"></i>
-                            <span>GV. Hoàng Văn E</span>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-clock"></i>
-                            <span>2 tiết/tuần</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-2">
-                        <button class="flex-1 bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 text-sm">
-                            Xem chi tiết
-                        </button>
-                        <button class="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Course Card 6 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div class="h-48 bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
-                    <i class="fas fa-landmark text-white text-4xl"></i>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">Khối 10</span>
-                        <span class="text-sm text-gray-500">37 học sinh</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Lịch sử Việt Nam</h3>
-                    <p class="text-gray-600 text-sm mb-4">Khóa học lịch sử Việt Nam từ thời cổ đại đến hiện đại</p>
-                    
-                    <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-user"></i>
-                            <span>GV. Vũ Thị F</span>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <i class="fas fa-clock"></i>
-                            <span>2 tiết/tuần</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-2">
-                        <button class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 text-sm">
-                            Xem chi tiết
-                        </button>
-                        <button class="p-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pagination -->
-        <div class="flex items-center justify-between mt-8">
-            <div class="text-sm text-gray-500">
-                Hiển thị 1-6 trong tổng số 45 khóa học
-            </div>
-            <div class="flex items-center space-x-2">
-                <button class="px-3 py-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="px-3 py-2 bg-blue-600 text-white rounded-lg">1</button>
-                <button class="px-3 py-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">2</button>
-                <button class="px-3 py-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">3</button>
-                <button class="px-3 py-2 text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                </form>
             </div>
         </div>
     </div>
+</div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var classRoomMap = {};
+    /*[# th:each="cl : ${classRooms}" ]*/
+    /*[# th:inline="javascript" ]*/
+    /*[[
+        for (var i = 0; i < [[${classRooms.size()}]]; i++) {
+            var cl = [[${classRooms[i]}]];
+            classRoomMap[cl.id] = {
+                grade: cl.grade,
+                subject: cl.subject,
+                studentCount: cl.studentCount
+            };
+        }
+    ]]*/
+    /*]]>*/
+    // Nếu trên không hoạt động, bạn có thể truyền dữ liệu classRooms qua JSON từ controller và parse lại ở đây.
+
+    function updateClassInfo(type, cid) {
+        var select, gradeInput, subjectInput, studentCountInput;
+        if (type === 'add') {
+            select = document.getElementById('add-classRoomSelect');
+            gradeInput = document.getElementById('add-grade');
+            subjectInput = document.getElementById('add-subject');
+            studentCountInput = document.getElementById('add-studentCount');
+        } else {
+            select = document.querySelector('.edit-classRoomSelect[data-cid="' + cid + '"]');
+            gradeInput = document.getElementById('edit-grade-' + cid);
+            subjectInput = document.getElementById('edit-subject-' + cid);
+            studentCountInput = document.getElementById('edit-studentCount-' + cid);
+        }
+        var val = select.value;
+        if (classRoomMap[val]) {
+            gradeInput.value = classRoomMap[val].grade;
+            subjectInput.value = classRoomMap[val].subject;
+            studentCountInput.value = classRoomMap[val].studentCount;
+        } else {
+            gradeInput.value = '';
+            subjectInput.value = '';
+            studentCountInput.value = '';
+        }
+    }
+</script>
 </body>
 </html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách học sinh</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Không dùng CSS custom, chỉ dùng Bootstrap -->
+</head>
+<body>
+<div class="container mt-4" data-fragment="content" th:fragment="content">
+    <div class="mb-3">
+        <h2 class="fw-bold text-primary">Danh sách học sinh</h2>
+        <div class="text-secondary mb-2">Quản lý thông tin chi tiết học sinh lớp <span th:text="${classRoom != null ? classRoom.name : ''}"></span></div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6 col-12">
+            <input type="text" class="form-control" placeholder="Tìm kiếm học sinh..." id="studentSearchInput" oninput="filterStudents()">
+        </div>
+    </div>
+    <div id="studentList" class="row g-3">
+        <div th:each="student : ${students}" class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex align-items-start gap-3">
+                    <div>
+                        <img th:if="${student.avatarUrl != null and !#strings.isEmpty(student.avatarUrl)}"
+                             th:src="${student.avatarUrl}" alt="Avatar"
+                             class="rounded-circle border" style="width:40px;height:40px;object-fit:cover;">
+                        <span th:if="${student.avatarUrl == null or #strings.isEmpty(student.avatarUrl)}"
+                              class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border"
+                              style="width:40px;height:40px;">
+                            <i class="bi bi-person fs-4 text-secondary"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold fs-6" th:text="${student.fullName}"></div>
+                        <div class="text-muted small">
+                            Sinh ngày: <span th:text="${student.dateOfBirth != null ? #temporals.format(student.dateOfBirth, 'dd/MM/yyyy') : 'Chưa cập nhật'}"></span>
+                            - Lớp: <span th:text="${student.classRoom != null and student.classRoom.name != null ? student.classRoom.name : (classRoom != null and classRoom.name != null ? classRoom.name : '')}"></span>
+                        </div>
+                        <div class="mt-1">
+                            <span class="me-3"><i class="bi bi-telephone"></i> <span th:text="${student.phone != null ? student.phone : 'Chưa cập nhật'}"></span></span>
+                            <span><i class="bi bi-envelope"></i> <span th:text="${student.email != null ? student.email : 'Chưa cập nhật'}"></span></span>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-primary me-2" th:text="'Học lực: ' + (student.academicPerformance != null ? student.academicPerformance : 'Chưa có')"></span>
+                            <span class="badge bg-success" th:text="'Hạnh kiểm: ' + (student.conduct != null ? student.conduct : 'Chưa có')"></span>
+                        </div>
+                        <div class="mt-2 text-muted small">
+                            Mã HS: <span th:text="${student.studentCode != null ? student.studentCode : ''}"></span>
+                            <span class="ms-3">Trạng thái: <span th:text="${student.status != null ? student.status : ''}"></span></span>
+                        </div>
+                        <div class="mt-2 text-muted small">
+                            Địa chỉ: <span th:text="${student.address != null ? student.address : ''}"></span>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column gap-2 ms-auto">
+                        <a href="#" class="btn btn-outline-secondary btn-sm" title="Sửa"><i class="bi bi-pencil"></i></a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm" title="Nhận xét"><i class="bi bi-chat-dots"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script>
+function filterStudents() {
+    const input = document.getElementById('studentSearchInput').value.toLowerCase();
+    document.querySelectorAll('#studentList [data-name]').forEach(card => {
+        const name = card.getAttribute('data-name') ? card.getAttribute('data-name').toLowerCase() : '';
+        card.style.display = name.includes(input) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

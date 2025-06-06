@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch thi của tôi</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h2 class="mb-4">Lịch thi của lớp</h2>
+    <div th:if="${#lists.isEmpty(examSchedules)}" class="alert alert-info">
+        Không có lịch thi nào cho lớp của bạn.
+    </div>
+    <div th:if="${not #lists.isEmpty(examSchedules)}">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Môn thi</th>
+                    <th>Ngày</th>
+                    <th>Giờ</th>
+                    <th>Phòng thi</th>
+                    <th>Số thí sinh</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="exam : ${examSchedules}">
+                    <td th:text="${exam.subject}"></td>
+                    <td th:text="${#temporals.format(exam.startTime, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${#temporals.format(exam.startTime, 'HH:mm') + ' - ' + #temporals.format(exam.endTime, 'HH:mm')}"></td>
+                    <td th:text="${exam.rooms}"></td>
+                    <td th:text="${exam.numberOfStudents}"></td>
+                    <td th:text="${exam.status}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

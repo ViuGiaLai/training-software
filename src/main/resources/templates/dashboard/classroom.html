@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý lớp học</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #e3eaff;
+            --secondary-color: #3f37c9;
+            --danger-color: #ef233c;
+            --success-color: #4cc9f0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin-top: 2rem;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: none;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            border-bottom-width: 1px;
+        }
+        
+        .table td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+        }
+        
+        .badge-homeroom {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 0.35em 0.65em;
+            font-weight: 500;
+            border-radius: 50px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .action-btns .btn {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #dee2e6;
+        }
+        
+        .filter-bar {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .grade-indicator {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            text-align: center;
+            line-height: 24px;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .action-btns {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .action-btns .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-chalkboard me-2"></i>Quản lý lớp học</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClassModal">
+            <i class="fas fa-plus me-2"></i> Thêm lớp học
+        </button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form class="row g-3" method="get" th:action="@{/admin/dashboard/classroom}">
+            <div class="col-md-3">
+                <label class="form-label">Khối lớp</label>
+                <select class="form-select" name="grade">
+                    <option value="">Tất cả khối</option>
+                    <option value="10" th:selected="${selectedGrade == '10'}">10</option>
+                    <option value="11" th:selected="${selectedGrade == '11'}">11</option>
+                    <option value="12" th:selected="${selectedGrade == '12'}">12</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Năm học</label>
+                <select class="form-select" name="academicYear">
+                    <option value="">Tất cả năm học</option>
+                    <option th:each="y : ${academicYears}" th:value="${y}" th:text="${y}" th:selected="${y == selectedYear}"></option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Giáo viên CN</label>
+                <select class="form-select" name="teacherId">
+                    <option value="">Tất cả giáo viên</option>
+                    <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}" th:selected="${t.id == selectedTeacherId}"></option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary w-100" type="submit">
+                    <i class="fas fa-filter me-1"></i> Lọc
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Class List -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Danh sách lớp học</span>
+            <span class="badge bg-primary" th:text="'Hiển thị ' + ${classRooms.size()} + ' lớp'"></span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Mã lớp</th>
+                            <th>Tên lớp</th>
+                            <th>Khối</th>
+                            <th>Năm học</th>
+                            <th>Giáo viên CN</th>
+                            <th>Sĩ số</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cl : ${classRooms}">
+                            <td><span class="fw-bold" th:text="${cl.code}"></span></td>
+                            <td th:text="${cl.name}"></td>
+                            <td><span class="grade-indicator" th:text="${cl.grade}"></span></td>
+                            <td th:text="${cl.academicYear}"></td>
+                            <td>
+                                <span th:if="${cl.homeroomTeacher != null}">
+                                    <a th:href="@{/admin/dashboard/teachers/{id}(id=${cl.homeroomTeacher.id})}" class="badge-homeroom text-decoration-none" th:text="${cl.homeroomTeacher.fullName}" target="_blank"></a>
+                                </span>
+                                <button th:if="${cl.homeroomTeacher == null}" class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="modal" th:attr="data-bs-target='#assignTeacherModal'+${cl.id}">
+                                    <i class="fas fa-user-plus me-1"></i>Gán
+                                </button>
+                            </td>
+                           <td>
+                                <a href="javascript:void(0);"
+                                th:attr="data-bs-toggle='modal',data-bs-target='#studentListModal' + ${cl.id}"
+                                class="text-decoration-underline fw-bold d-flex align-items-center gap-1"
+                                title="Xem danh sách sinh viên">
+                                    <i class="fas fa-users text-primary"></i>
+                                    <span th:text="${cl.studentCount}"></span>
+                                </a>
+                            </td>
+
+                            <td class="action-btns">
+                                <button class="btn btn-sm btn-outline-info" title="Sửa"
+                                    data-bs-toggle="modal" th:attr="data-bs-target='#editClassModal'+${cl.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a th:href="@{/admin/dashboard/classroom/{id}/students(id=${cl.id})}" class="btn btn-sm btn-outline-success" title="Xem sinh viên">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <!-- Hiển thị nút xóa nếu sĩ số = 0 -->
+                                <button class="btn btn-sm btn-outline-danger" title="Xóa"
+                                    th:if="${cl.studentCount == 0}"
+                                    data-bs-toggle="modal" th:attr="data-bs-target='#deleteClassModal'+${cl.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <!-- Nếu muốn luôn hiển thị nút xóa, chỉ disable khi sĩ số > 0 -->
+                                <!--
+                                <button class="btn btn-sm btn-outline-danger" title="Xóa"
+                                    th:attr="data-bs-toggle='modal',data-bs-target='#deleteClassModal'+${cl.id}"
+                                    th:disabled="${cl.studentCount > 0}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                -->
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(classRooms)}">
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i class="fas fa-school"></i>
+                                    <h5 class="mt-2">Không có lớp học nào</h5>
+                                    <p class="text-muted">Thêm lớp học mới bằng cách nhấn nút "Thêm lớp học"</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div class="modal fade" id="addClassModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <form th:action="@{/admin/dashboard/classroom/add}" method="post" class="modal-content">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Thêm lớp học mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Mã lớp <span class="text-danger">*</span></label>
+                            <input type="text" name="code" class="form-control" required placeholder="VD: 10A1" th:value="${newCode}" pattern="[A-Za-z0-9]+">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tên lớp <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required placeholder="VD: Lớp 10A1">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Khối <span class="text-danger">*</span></label>
+                            <select name="grade" class="form-select" required>
+                                <option value="">Chọn khối</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Năm học <span class="text-danger">*</span></label>
+                            <input type="text" name="academicYear" class="form-control" required placeholder="VD: 2023-2024">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giáo viên chủ nhiệm</label>
+                        <select name="homeroomTeacherId" class="form-select">
+                            <option value="">Chưa gán giáo viên</option>
+                            <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Thông tin thêm về lớp học"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm lớp</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Class Modal (for each class) -->
+    <div th:each="cl : ${classRooms}">
+        <div class="modal fade" th:id="'editClassModal'+${cl.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <form th:action="@{/admin/dashboard/classroom/edit}" method="post" class="modal-content">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="id" th:value="${cl.id}">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Chỉnh sửa lớp học</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Mã lớp <span class="text-danger">*</span></label>
+                                <input type="text" name="code" class="form-control" required th:value="${cl.code}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tên lớp <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control" required th:value="${cl.name}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Khối <span class="text-danger">*</span></label>
+                                <select name="grade" class="form-select" required>
+                                    <option value="10" th:selected="${cl.grade == '10'}">10</option>
+                                    <option value="11" th:selected="${cl.grade == '11'}">11</option>
+                                    <option value="12" th:selected="${cl.grade == '12'}">12</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Năm học <span class="text-danger">*</span></label>
+                                <input type="text" name="academicYear" class="form-control" required th:value="${cl.academicYear}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giáo viên chủ nhiệm</label>
+                            <select name="homeroomTeacherId" class="form-select">
+                                <option value="">Chưa gán giáo viên</option>
+                                <option th:each="t : ${teachers}" th:value="${t.id}" 
+                                    th:text="${t.fullName}" th:selected="${t.id == cl.homeroomTeacher?.id}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả</label>
+                            <textarea name="description" class="form-control" rows="3"
+                                th:text="${cl.description}"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Class Modal (for each class) -->
+    <div th:each="cl : ${classRooms}">
+        <div class="modal fade" th:id="'deleteClassModal'+${cl.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <form th:action="@{/admin/dashboard/classroom/delete}" method="post" class="modal-content">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="id" th:value="${cl.id}">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bạn có chắc chắn muốn xóa lớp <span class="fw-bold" th:text="${cl.name}"></span>?</p>
+                        <p class="text-danger">Hành động này không thể hoàn tác!</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger">Xóa lớp</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal danh sách sinh viên cho từng lớp -->
+    <div th:each="cl : ${classRooms}">
+        <div class="modal fade" th:id="'studentListModal'+${cl.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-users me-2"></i>
+                            Danh sách học sinh lớp <span th:text="${cl.name}"></span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Họ tên</th>
+                                    <th>Mã học sinh</th>
+                                    <th>Tên đăng nhập</th>
+                                    <th>Email</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="stu, idx : ${sortedStudentsMap[cl.id]}">
+                                    <td th:text="${idx.index + 1}"></td>
+                                    <td th:text="${stu.fullName}"></td>
+                                    <td th:text="${stu.studentCode}"></td>
+                                    <td th:text="${stu.username}"></td>
+                                    <td th:text="${stu.email}"></td>
+                                    <td th:text="${stu.status}"></td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(sortedStudentsMap[cl.id])}">
+                                    <td colspan="6" class="text-center text-muted">Chưa có học sinh nào</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Auto format academic year input
+        document.querySelectorAll('input[name="academicYear"]').forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.match(/^\d{4}$/)) {
+                    this.value = this.value + '-' + (parseInt(this.value) + 1);
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

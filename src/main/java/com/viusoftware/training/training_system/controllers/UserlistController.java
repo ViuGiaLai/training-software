@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class UserlistController {
     @GetMapping("/admin/dashboard/user-list")
     public String userList() {
-        return "dashboard/users/user-list"; // Không có dấu / ở đầu
+        return "dashboard/users/user-list";
     }
 }

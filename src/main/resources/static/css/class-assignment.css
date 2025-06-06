@@ -1,0 +1,141 @@
+/* General Styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #f5f7fa;
+    color: #2d3748;
+    line-height: 1.6;
+}
+
+div.container {
+    max-width: 1200px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin: 2rem auto;
+}
+
+/* Header Styles */
+div.container h2 {
+    color: #2d3748;
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* Button Styles */
+div.container button.btn-primary {
+    background-color: #4f46e5;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+div.container button.btn-primary:hover {
+    background-color: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+}
+
+div.container button.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Table Styles */
+div.container table.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+div.container table.table thead th {
+    background-color: #4f46e5;
+    color: white;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border: none;
+}
+
+div.container table.table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf2f7;
+}
+
+div.container table.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+div.container table.table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Action Buttons */
+div.container table.table tbody td a.btn-info {
+    background-color: #06b6d4;
+    border: none;
+}
+
+div.container table.table tbody td button.btn-warning {
+    background-color: #f59e0b;
+    border: none;
+    color: white;
+}
+
+div.container table.table tbody td form button.btn-danger {
+    background-color: #ef4444;
+    border: none;
+}
+
+/* Modal Styles */
+div.container div.modal div.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+div.container div.modal div.modal-content div.modal-header {
+    background-color: #4f46e5;
+    color: white;
+    border-radius: 12px 12px 0 0;
+    padding: 1rem 1.5rem;
+}
+
+div.container div.modal div.modal-content div.modal-body {
+    padding: 1.5rem;
+}
+
+div.container div.modal div.modal-content div.modal-footer {
+    border-top: 1px solid #edf2f7;
+    padding: 1rem 1.5rem;
+}
+
+/* Form Styles */
+div.container div.modal div.modal-content div.modal-body label.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #4a5568;
+}
+
+div.container div.modal div.modal-content div.modal-body input.form-control,
+div.container div.modal div.modal-content div.modal-body textarea.form-control {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    transition: border-color 0.2s;
+}
+
+div.container div.modal div.modal-content div.modal-body input.form-control:focus,
+div.container div.modal div.modal-content div.modal-body textarea.form-control:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Empty State */
+div.container table.table tbody tr td.text-muted {
+    color: #a0aec0 !important;
+    padding: 2rem;
+    font-style: italic;
+}

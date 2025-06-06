@@ -33,7 +33,8 @@ public class DataLoader {
                     passwordEncoder.encode("vui106018"),
                     "ADMIN",
                     "viu106018@donga.edu.vn",
-                    "0367604684"
+                    "0367604684",
+                    null // Added null for imageUrl
                 );
                 logger.info("Admin user viu106018 created.");
             } else {
@@ -47,7 +48,8 @@ public class DataLoader {
                     passwordEncoder.encode("rmahviu@852005"),
                     "ADMIN",
                     "viuadmin@donga.edu.vn",
-                    "0367604685"
+                    "0367604685",
+                    null // Added null for imageUrl
                 );
                 logger.info("Admin user viu852005 created.");
             } else {
@@ -61,7 +63,8 @@ public class DataLoader {
                     passwordEncoder.encode("password"),
                     "ADMIN",
                     "temp.admin@example.com",
-                    null // phone là tùy chọn
+                    null, // phone là tùy chọn
+                    null // Added null for imageUrl
                 );
                 logger.info("Temporary admin user temp_admin created.");
             } else {

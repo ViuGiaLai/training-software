@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang chủ giáo viên</title>
+    <link rel="icon" href="/images/logo_training_learning.png" type="image/x-icon">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <style>
+        body { background: #f8f9fa; }
+        .sidebar {
+            min-height: 100vh;
+            background: #fff;
+            border-right: 1px solid #eee;
+            padding: 32px 0 0 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            height: 100vh;
+            width: 220px;
+        }
+        .sidebar .nav-link.active, .sidebar .nav-link:hover {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+        .sidebar .nav-link {
+            color: #222;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .main-content {
+            padding: 32px 32px 0 32px;
+            margin-left: 220px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(67,97,238,0.06);
+            padding: 1.5rem 1.2rem;
+            min-width: 180px;
+            min-height: 100px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .stat-label { color: #222; font-weight: 500; }
+        .stat-value { font-size: 1.7rem; font-weight: 700; }
+        .quick-action .btn { min-width: 120px; }
+        .activity-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px;}
+        .dot-green { background: #2ecc71; }
+        .dot-blue { background: #3498db; }
+        .dot-orange { background: #f6a700; }
+        .dot-gray { background: #bbb; }
+        .work-item { border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; }
+        .work-blue { background: #e3f0ff; }
+        .work-green { background: #e6fcf5; }
+        .work-orange { background: #fff4e6; }
+        .avatar-circle {
+            width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 sidebar d-flex flex-column">
+            <div class="mb-4 ps-3">
+                <div class="fw-bold fs-5" th:text="${classRoom != null ? classRoom.name : 'Chưa có lớp'}"></div>
+                <div class="text-muted small" th:text="${classRoom != null ? classRoom.academicYear : ''}"></div>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link active" href="/gv/teacher">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link" href="/gv/hoc-sinh-cua-toi">Học sinh</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Điểm số</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Điểm danh</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Nhận xét</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Bài tập</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Liên lạc</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Giáo án</a></li>
+                <li class="nav-item mt-4"><a class="nav-link" href="#">Cài đặt</a></li>
+                <li class="nav-item"><a class="nav-link text-danger" href="/logout">Đăng xuất</a></li>
+            </ul>
+        </nav>
+        <!-- Main content hiện thị nội dụng ở đây -->
+        <main class="col-md-10 main-content" id="mainContent">
+            <!-- Nội dung động sẽ được load ở đây -->
+            <div th:if="${contentFragment != null}" th:replace="${contentFragment} :: content"></div>
+        </main>
+    </div>
+</div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script>
+function loadContent(url, fragment) {
+    // Đổi URL trên thanh địa chỉ khi chuyển tab (không reload trang)
+    window.history.pushState({}, '', url.replace('/fragment', ''));
+    fetch(url)
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            let content = doc.querySelector('[data-fragment="content"]');
+            if (content) {
+                document.getElementById('mainContent').innerHTML = content.outerHTML;
+            }
+        });
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+    if (fragment === 'students') {
+        document.querySelector('.sidebar .nav-link[href="/gv/hoc-sinh-cua-toi"]').classList.add('active');
+    } else {
+        document.querySelector('.sidebar .nav-link[href="/gv/teacher"]').classList.add('active');
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+    var studentLink = document.querySelector('.sidebar .nav-link[href="/gv/hoc-sinh-cua-toi"]');
+    if (studentLink) {
+        studentLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadContent('/gv/hoc-sinh-cua-toi/fragment', 'students');
+        });
+    }
+    var homeLink = document.querySelector('.sidebar .nav-link[href="/gv/teacher"]');
+    if (homeLink) {
+        homeLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadContent('/gv/teacher/fragment', 'home');
+        });
+    }
+    // Xử lý back/forward trình duyệt
+    window.addEventListener('popstate', function() {
+        if (window.location.pathname === '/gv/hoc-sinh-cua-toi') {
+            loadContent('/gv/hoc-sinh-cua-toi/fragment', 'students');
+        } else {
+            loadContent('/gv/teacher/fragment', 'home');
+        }
+    });
+});
+</script>
+</body>
+</html>

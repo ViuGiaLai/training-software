@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin cá nhân - Hệ thống quản lý học sinh</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <style>
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form th:action="@{/sv/thong-tin-ca-nhan/update}" method="post">
+                        <div class="d-flex align-items-center mb-4">
+                            <img th:src="${!#strings.isEmpty(student.avatarUrl) ? student.avatarUrl : '/images/avatar-default.png'}"
+                                 alt="Avatar"
+                                 class="profile-avatar me-4">
+                            <div>
+                                <!-- Thêm các trường ẩn để submit lên controller -->
+                                <input type="hidden" name="studentCode" th:value="${student.studentCode}" />
+                                <input type="hidden" name="username" th:value="${student.username}" />
+                                <input type="text" name="fullName" th:value="${student.fullName}" class="form-control mb-2" required>
+                                <div class="text-muted mb-2" th:text="'Lớp: ' + (${student.classRoom != null ? student.classRoom.name : student.classroom})"></div>
+                                <div class="text-muted mb-2" th:text="'Mã học sinh: ' + ${student.studentCode}"></div>
+                                <span class="badge bg-success" th:if="${student.status == 'Đang học'}">Đang học</span>
+                                <span class="badge bg-secondary" th:if="${student.status != 'Đang học'}" th:text="${student.status}"></span>
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3">📋 Thông tin cá nhân</h5>
+                        <table class="table profile-table">
+                            <tbody>
+                                <tr>
+                                    <th>Email</th>
+                                    <td><input type="email" name="email" th:value="${student.email}" class="form-control" required></td>
+                                </tr>
+                                <tr>
+                                    <th>Số điện thoại</th>
+                                    <td><input type="text" name="phone" th:value="${student.phone}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Giới tính</th>
+                                    <td>
+                                        <select name="gender" class="form-select">
+                                            <option value="">--Chọn--</option>
+                                            <option value="Nam" th:selected="${student.gender == 'Nam'}">Nam</option>
+                                            <option value="Nữ" th:selected="${student.gender == 'Nữ'}">Nữ</option>
+                                            <option value="Khác" th:selected="${student.gender == 'Khác'}">Khác</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Ngày sinh</th>
+                                    <td><input type="date" name="dateOfBirth" th:value="${student.dateOfBirth}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Nơi sinh</th>
+                                    <td><input type="text" name="birthPlace" th:value="${student.birthPlace}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>CCCD/CMND</th>
+                                    <td><input type="text" name="identityNumber" th:value="${student.identityNumber}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Ngày cấp</th>
+                                    <td><input type="date" name="identityIssueDate" th:value="${student.identityIssueDate}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Nơi cấp</th>
+                                    <td><input type="text" name="identityIssuePlace" th:value="${student.identityIssuePlace}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Dân tộc</th>
+                                    <td><input type="text" name="ethnicity" th:value="${student.ethnicity}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Tôn giáo</th>
+                                    <td><input type="text" name="religion" th:value="${student.religion}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Quốc tịch</th>
+                                    <td><input type="text" name="nationality" th:value="${student.nationality}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Địa chỉ</th>
+                                    <td><input type="text" name="address" th:value="${student.address}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Ảnh đại diện (URL)</th>
+                                    <td><input type="text" name="avatarUrl" th:value="${student.avatarUrl}" class="form-control"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h5 class="mt-4 mb-3">Thông tin gia đình</h5>
+                        <table class="table profile-table">
+                            <tbody>
+                                <tr>
+                                    <th>Họ tên cha</th>
+                                    <td><input type="text" name="fatherName" th:value="${student.fatherName}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Nghề nghiệp cha</th>
+                                    <td><input type="text" name="fatherJob" th:value="${student.fatherJob}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>SĐT cha</th>
+                                    <td><input type="text" name="fatherPhone" th:value="${student.fatherPhone}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Họ tên mẹ</th>
+                                    <td><input type="text" name="motherName" th:value="${student.motherName}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>Nghề nghiệp mẹ</th>
+                                    <td><input type="text" name="motherJob" th:value="${student.motherJob}" class="form-control"></td>
+                                </tr>
+                                <tr>
+                                    <th>SĐT mẹ</th>
+                                    <td><input type="text" name="motherPhone" th:value="${student.motherPhone}" class="form-control"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- Thêm nút Lưu -->
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-save"></i> Lưu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</body>
+</html>

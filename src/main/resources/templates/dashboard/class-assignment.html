@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân công lớp học - Hệ thống quản lý trường học</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/class-assignment.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f5f7fa;
+        }
+        .assignment-header {
+            background: #fff;
+            border-bottom: 1px solid #e3e3e3;
+            padding: 1rem 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .assignment-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #1976d2;
+        }
+        .assignment-header .btn {
+            min-width: 140px;
+        }
+        .teacher-list, .class-list {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(67,97,238,0.06);
+            padding: 1.5rem;
+            min-height: 350px;
+        }
+        .teacher-card {
+            border: 1px solid #e3e3e3;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            background: #f8fafc;
+            cursor: grab;
+            transition: box-shadow 0.2s;
+        }
+        .teacher-card:last-child {
+            margin-bottom: 0;
+        }
+        .teacher-card:hover {
+            box-shadow: 0 2px 8px rgba(67,97,238,0.08);
+            background: #e3eaff;
+        }
+        .class-card {
+            border: 2px dashed #bfc9d1;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            background: #f8fafc;
+            min-height: 120px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .class-card.drag-over {
+            border-color: #1976d2;
+            background: #e3eaff;
+        }
+        .assigned-teacher {
+            background: #e3eaff;
+            border: 1px solid #bfc9d1;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .assigned-teacher:last-child {
+            margin-bottom: 0;
+        }
+        .assigned-teacher .fa-times {
+            color: #e74c3c;
+            cursor: pointer;
+        }
+        .drop-zone-text {
+            color: #bfc9d1;
+            font-size: 0.95rem;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        @media (max-width: 991px) {
+            .row.flex-lg-row {
+                flex-direction: column !important;
+            }
+            .teacher-list, .class-list {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="assignment-header d-flex justify-content-between align-items-center">
+        <h1>Phân công lớp học</h1>
+        <button onclick="saveAssignments()" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>Lưu phân công
+        </button>
+    </div>
+    <div class="container">
+        <div class="row flex-lg-row">
+            <!-- Danh sách giảng viên -->
+            <div class="col-lg-5 mb-4 teacher-list">
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Danh sách giảng viên</h5>
+                    <input type="text" class="form-control form-control-sm w-50" placeholder="Tìm giảng viên..." oninput="filterTeachers(this.value)">
+                </div>
+                <div id="teacher-list">
+                    <div th:each="teacher : ${teachers}" class="teacher-card"
+                        draggable="true"
+                        th:attr="data-teacher-id=${teacher.id},data-teacher-name=${teacher.fullName}"
+                        ondragstart="dragStart(event)">
+                        <div class="d-flex align-items-center">
+                            <img th:src="${teacher.avatar != null ? teacher.avatar : '/images/avatar.png'}" alt="Avatar" class="rounded-circle me-3" width="40" height="40">
+                            <div>
+                                <div class="fw-semibold" th:text="${teacher.fullName}"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(teachers)}" class="text-muted text-center">Không có giảng viên nào.</div>
+                </div>
+            </div>
+            <!-- Danh sách lớp học -->
+            <div class="col-lg-7 class-list">
+                <div class="mb-3 d-flex align-items-center gap-3">
+                    <h5 class="mb-0">Danh sách lớp học</h5>
+                    <!-- Bộ lọc khối lấy từ classroom -->
+                    <select class="form-select form-select-sm w-auto" id="gradeFilter" onchange="filterClassByGrade()">
+                        <option value="">Tất cả khối</option>
+                        <!-- Lấy danh sách khối từ dữ liệu classroom -->
+                        <option th:each="g : ${grades}" th:value="${g}" th:text="'Khối ' + ${g}"></option>
+                    </select>
+                </div>
+                <div id="class-list">
+                    <!-- Render lớp học bằng JS để lọc theo khối -->
+                </div>
+                <div id="no-class-msg" class="text-muted text-center" style="display:none;">Không có lớp học nào.</div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Lấy dữ liệu lớp học từ classroom (backend truyền sang)
+        var allClassRooms = /*[[${classRooms}]]*/ [];
+        var allAssignments = /*[[${assignments}]]*/ [];
+        var allTeachers = /*[[${teachers}]]*/ [];
+        /*]]>*/
+
+        let draggedTeacher = null;
+        let currentGrade = "";
+
+        function renderClassList() {
+            const classListDiv = document.getElementById('class-list');
+            classListDiv.innerHTML = '';
+            let filteredClasses = allClassRooms;
+            if (currentGrade) {
+                filteredClasses = allClassRooms.filter(cl => cl.grade == currentGrade);
+            }
+            if (filteredClasses.length === 0) {
+                document.getElementById('no-class-msg').style.display = '';
+                return;
+            }
+            document.getElementById('no-class-msg').style.display = 'none';
+            filteredClasses.forEach(classRoom => {
+                // Tìm assignment cho lớp này
+                const assignment = allAssignments.find(a => a.classRoom && a.classRoom.id === classRoom.id);
+                const teacherName = assignment && assignment.teacher ? assignment.teacher.fullName : '';
+                const teacherId = assignment && assignment.teacher ? assignment.teacher.id : '';
+                const classCard = document.createElement('div');
+                classCard.className = 'class-card';
+                classCard.setAttribute('data-class-id', classRoom.id);
+                classCard.setAttribute('ondrop', 'drop(event)');
+                classCard.setAttribute('ondragover', 'allowDrop(event)');
+                classCard.innerHTML = `
+                    <div class="fw-bold mb-2">Lớp ${classRoom.name}</div>
+                    <div class="text-muted mb-2">${classRoom.studentCount || 0} học sinh</div>
+                    <div class="assigned-teachers mb-2">
+                        ${teacherName ? `
+                            <div class="assigned-teacher" data-teacher-id="${teacherId}">
+                                <span>
+                                    <i class="fas fa-user me-1"></i>
+                                    ${teacherName}
+                            </span>
+                            <i class="fas fa-times" onclick="removeAssignment(this)"></i>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="drop-zone-text" style="${teacherName ? 'display:none;' : ''}">
+                        <i class="fas fa-plus-circle"></i> Kéo giảng viên vào đây
+                    </div>
+                `;
+                classListDiv.appendChild(classCard);
+            });
+        }
+
+        function filterClassByGrade() {
+            currentGrade = document.getElementById('gradeFilter').value;
+            renderClassList();
+        }
+
+        function dragStart(event) {
+            draggedTeacher = {
+                id: event.target.dataset.teacherId,
+                name: event.target.dataset.teacherName
+            };
+            event.target.style.opacity = '0.5';
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const classCard = event.currentTarget;
+            classCard.classList.remove('drag-over');
+            if (!draggedTeacher) return;
+            // Gửi AJAX lên server để lưu phân công (nếu có backend)
+            // Ở đây chỉ cập nhật trên giao diện (demo)
+            addTeacherToClass(classCard, draggedTeacher);
+            // Cập nhật assignment trong JS (demo)
+            const classId = classCard.getAttribute('data-class-id');
+            allAssignments = allAssignments.filter(a => !(a.classRoom && a.classRoom.id == classId));
+            allAssignments.push({
+                classRoom: { id: classId },
+                teacher: { id: draggedTeacher.id, fullName: draggedTeacher.name }
+            });
+            draggedTeacher = null;
+        }
+
+        function addTeacherToClass(classCard, teacher) {
+            const assignedTeachers = classCard.querySelector('.assigned-teachers');
+            assignedTeachers.innerHTML = `
+                <div class="assigned-teacher" data-teacher-id="${teacher.id}">
+                    <span>
+                        <i class="fas fa-user me-1"></i>
+                        ${teacher.name}
+                    </span>
+                    <i class="fas fa-times" onclick="removeAssignment(this)"></i>
+                </div>
+            `;
+            // Ẩn dòng "Kéo giảng viên vào đây"
+            const dropZoneText = classCard.querySelector('.drop-zone-text');
+            if (dropZoneText) dropZoneText.style.display = 'none';
+        }
+
+        function removeAssignment(icon) {
+            const teacherDiv = icon.closest('.assigned-teacher');
+            const classCard = teacherDiv.closest('.class-card');
+            const classId = classCard.getAttribute('data-class-id');
+            teacherDiv.remove();
+            // Xóa assignment trong JS (demo)
+            allAssignments = allAssignments.filter(a => !(a.classRoom && a.classRoom.id == classId));
+            // Nếu không còn ai thì hiện lại dòng "Kéo giảng viên vào đây"
+            const dropZoneText = classCard.querySelector('.drop-zone-text');
+            if (dropZoneText) dropZoneText.style.display = '';
+        }
+
+        function filterTeachers(query) {
+            const teacherCards = document.querySelectorAll('.teacher-card');
+            teacherCards.forEach(card => {
+                const name = card.dataset.teacherName ? card.dataset.teacherName.toLowerCase() : '';
+                card.style.display = name.includes(query.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+        function saveAssignments() {
+            alert('Lưu phân công (cần backend xử lý)');
+        }
+
+        document.addEventListener('dragend', function(event) {
+            event.target.style.opacity = '1';
+        });
+
+        document.addEventListener('dragleave', function(event) {
+            if (event.target.classList.contains('class-card')) {
+                event.target.classList.remove('drag-over');
+            }
+        });
+
+        // Khởi tạo giao diện khi load trang
+        document.addEventListener('DOMContentLoaded', function() {
+            renderClassList();
+        });
+    </script>
+</body>
+</html>

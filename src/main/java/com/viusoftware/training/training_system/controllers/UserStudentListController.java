@@ -5,9 +5,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.viusoftware.training.training_system.entity.UsersStudents;
 import com.viusoftware.training.training_system.repository.UsersStudentsRepository;
+import com.viusoftware.training.training_system.entity.ClassRoom;
+import com.viusoftware.training.training_system.repository.ClassRoomRepository;
+import com.viusoftware.training.training_system.entity.Schedule;
+import com.viusoftware.training.training_system.repository.ScheduleRepository;
+import com.viusoftware.training.training_system.repository.SubjectRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ResponseBody;
+import java.util.stream.Collectors;
 
 @Controller
 public class UserStudentListController {
@@ -28,11 +36,20 @@ public class UserStudentListController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ClassRoomRepository classRoomRepository;
+
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+
+    @Autowired
+    private SubjectRepository subjectRepository;
+
     @GetMapping("/admin/dashboard/users/user-student-list")
     public String userStudentList(
             Model model,
             @RequestParam(required = false) String classroom,
-            @RequestParam(required = false) String course,
+            @RequestParam(required = false) String course, // <-- required = false
             @RequestParam(required = false) String major,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword
@@ -63,9 +80,8 @@ public class UserStudentListController {
         }
 
         model.addAttribute("students", students);
-        model.addAttribute("classrooms", java.util.List.of(
-            "10A1", "10A2", "11A1", "11A2", "12A1", "12A2"
-        ));
+        List<ClassRoom> classRooms = classRoomRepository.findAll();
+        model.addAttribute("classrooms", classRooms);
         model.addAttribute("courses", java.util.List.of(
             "K2022", "K2023", "K2024"
         ));
@@ -82,6 +98,9 @@ public class UserStudentListController {
         model.addAttribute("selectedStatus", status);
         model.addAttribute("keyword", keyword);
 
+        // Thêm dòng này để truyền danh sách ngành học từ bảng subject
+        model.addAttribute("subjects", subjectRepository.findAll());
+
         return "dashboard/users/user-student-list";
     }
 
@@ -93,9 +112,9 @@ public class UserStudentListController {
             @RequestParam String email,
             @RequestParam(required = false) String phone,
             @RequestParam String gender,
-            @RequestParam String major,
-            @RequestParam String course,
-            @RequestParam String classroom,
+            @RequestParam(required = false) String major,
+            @RequestParam(required = false) String course, // <-- required = false
+            @RequestParam Long classroomId,
             @RequestParam String status,
             @RequestParam String enrollmentDate,
             @RequestParam String password
@@ -113,11 +132,20 @@ public class UserStudentListController {
         student.setGender(gender);
         student.setMajor(major);
         student.setCourse(course);
-        student.setClassroom(classroom);
+        student.setClassroom(""); // Không dùng nữa hoặc có thể bỏ
         student.setStatus(status);
         student.setEnrollmentDate(LocalDate.parse(enrollmentDate));
         student.setPassword(passwordEncoder.encode(password));
         student.setRole("STUDENT");
+
+        // Gán classRoom cho học sinh nếu có
+        ClassRoom classRoom = classRoomRepository.findById(classroomId).orElse(null);
+        if (classRoom != null) {
+            student.setClassRoom(classRoom);
+        } else {
+            student.setClassRoom(null);
+        }
+
         usersStudentsRepository.save(student);
         return "redirect:/admin/dashboard/users/user-student-list";
     }
@@ -131,9 +159,9 @@ public class UserStudentListController {
             @RequestParam String email,
             @RequestParam(required = false) String phone,
             @RequestParam String gender,
-            @RequestParam String major,
-            @RequestParam String course,
-            @RequestParam String classroom,
+            @RequestParam(required = false) String major,
+            @RequestParam(required = false) String course, // <-- required = false
+            @RequestParam Long classroomId,
             @RequestParam String status,
             @RequestParam String enrollmentDate,
             @RequestParam String password
@@ -152,11 +180,20 @@ public class UserStudentListController {
             student.setGender(gender);
             student.setMajor(major);
             student.setCourse(course);
-            student.setClassroom(classroom);
+            student.setClassroom(""); // Không dùng nữa hoặc có thể bỏ
             student.setStatus(status);
             student.setEnrollmentDate(LocalDate.parse(enrollmentDate));
             student.setPassword(passwordEncoder.encode(password));
             student.setRole("STUDENT");
+
+            // Gán lại classRoom khi sửa
+            ClassRoom classRoom = classRoomRepository.findById(classroomId).orElse(null);
+            if (classRoom != null) {
+                student.setClassRoom(classRoom);
+            } else {
+                student.setClassRoom(null);
+            }
+
             usersStudentsRepository.save(student);
         }
         return "redirect:/admin/dashboard/users/user-student-list";
@@ -166,6 +203,9 @@ public class UserStudentListController {
     public String deleteStudent(@RequestParam Long id) {
         UsersStudents student = usersStudentsRepository.findById(id).orElse(null);
         if (student != null && !"admin".equalsIgnoreCase(student.getUsername())) {
+            // Xóa liên kết với lớp học trước khi xóa học sinh
+            student.setClassRoom(null);
+            usersStudentsRepository.save(student);
             usersStudentsRepository.deleteById(id);
         }
         return "redirect:/admin/dashboard/users/user-student-list";
@@ -252,4 +292,5 @@ public class UserStudentListController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
 }
