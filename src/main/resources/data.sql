@@ -1,8 +1,36 @@
+-- Xóa dữ liệu cũ để tránh trùng khóa chính
+DELETE FROM users_students;
+DELETE FROM class_room;
+DELETE FROM users_teachers;
+DELETE FROM users_admin;
+DELETE FROM subject;
+DELETE FROM room;
+DELETE FROM period;
+DELETE FROM exam_schedule;
+DELETE FROM schedule;
+
 -- ===========================
 -- Dữ liệu mẫu cho training_system
 -- ===========================
+-- admin
+-- -- Tạo bảng users_admin (nếu chưa có)
+-- CREATE TABLE IF NOT EXISTS users_admin (
+--   id BIGSERIAL PRIMARY KEY,
+--   username VARCHAR(255) UNIQUE NOT NULL,
+--   password VARCHAR(255) NOT NULL,
+--   role VARCHAR(255) NOT NULL,
+--   email VARCHAR(255) UNIQUE,
+--   phone VARCHAR(255) UNIQUE,
+--   image_url VARCHAR(255)
+-- );
 
--- 1. Giảng viên (users_teachers)
+-- -- Thêm dữ liệu admin mẫu
+-- INSERT INTO users_admin (id, username, password, role, email, phone, image_url) VALUES
+-- (3, 'viu106018', '$2a$10$GLGXwjVpn.dznkwxOsz6iOM9dVMg/JfHa0R8ay48VYibIPA6SmD8u', 'ROLE_ADMIN', 'viu106018@donga.edu.vn', '0367604684', 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.pinterest.com%2Fstarmanh%2Favatar-facebook%2F&psig=AOvVaw2sm0f-iaWQQze72W4YuLAu&ust=1748957676635000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCMDus5vt0o0DFQAAAAAdAAAAABAE'),
+-- (5, 'viu852005', '$2a$12$axP4gVxYOqfERUSuXHQYu.9RmoZ3VsGDMtoVC/d9ns4AmS2.Ql7p6', 'ROLE_ADMIN', 'viuadmin@donga.edu.vn', '0367604685', 'https://i.pinimg.com/200x/c5/b9/ff/c5b9ffb0d6e4fad7e6f7df27f9545a93.jpg'),
+-- (6, 'temp_admin', '$2a$10$1c0sC4c2n3KeOM4CU22L2u9Pd6RL8gDe0KLPO9xlz7oszrVndgqwq', 'ROLE_ADMIN', 'temp.admin@example.com', NULL, NULL);
+
+-- -- 1. Giảng viên (users_teachers)
 INSERT INTO users_teachers (
     id, avatar, created_at, degree, department, email, full_name,
     position, status, username, password, role, phone
@@ -10,36 +38,50 @@ INSERT INTO users_teachers (
     (3, 'https://moc247.com/wp-content/uploads/2023/12/loa-mat-voi-101-hinh-anh-avatar-meo-cute-dang-yeu-dep-mat_1-1.jpg', '2025-06-01', 'Thạc sĩ', 'Tổ Văn', 'rmahviu@tranning.edu.vn', 'Rmah Viu', 'Giáo viên', 'Đang công tác', 'rmahviu123', '$2a$10$KwUsWOnG1jCnbwvEJZx87OGtkuYnExFRXKkvaegyy.Ggo3n.VXwye', 'TEACHER', NULL),
     (4, 'https://moc247.com/wp-content/uploads/2023/12/loa-mat-voi-101-hinh-anh-avatar-meo-cute-dang-yeu-dep-mat_2.jpg', '2025-06-01', 'Tiến sĩ', 'Tổ Lý', 'hoaianhgv@tranning.edu.vn', 'Nguễn Thi Hoài Trang', 'Hiệu trưởng', 'Đang công tác', 'hoaianhgv', '$2a$10$sVl0dJbo5uYPGCsopYo/8e7y0cfU.o686lvnA2pBc4p9z6a/99NoO', 'TEACHER', NULL);
 
--- 2. Quản trị viên (users_admin)
-INSERT INTO users_admin (
-    id, username, password, role, email, phone, image_url
-) VALUES
-    (3, 'viu106018', '$2a$10$GLGXwjVpn.dznkwxOsz6iOM9dVMg/JfHa0R8ay48VYibIPA6SmD8u', 'ROLE_ADMIN', 'viu106018@donga.edu.vn', '0367604684', 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.pinterest.com%2Fstarmanh%2Favatar-facebook%2F&psig=AOvVaw2sm0f-iaWQQze72W4YuLAu&ust=1748957676635000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCMDus5vt0o0DFQAAAAAdAAAAABAE'),
-    (5, 'viu852005', '$2a$12$axP4gVxYOqfERUSuXHQYu.9RmoZ3VsGDMtoVC/d9ns4AmS2.Ql7p6', 'ROLE_ADMIN', 'viuadmin@donga.edu.vn', '0367604685', 'https://i.pinimg.com/200x/c5/b9/ff/c5b9ffb0d6e4fad7e6f7df27f9545a93.jpg'),
-    (6, 'temp_admin', '$2a$10$1c0sC4c2n3KeOM4CU22L2u9Pd6RL8gDe0KLPO9xlz7oszrVndgqwq', 'ROLE_ADMIN', 'temp.admin@example.com', NULL, NULL);
+-- -- 2. Quản trị viên (users_admin)
+-- INSERT INTO users_admin (
+--     id, username, password, role, email, phone, image_url
+-- ) VALUES
+--     (3, 'viu106018', '$2a$10$GLGXwjVpn.dznkwxOsz6iOM9dVMg/JfHa0R8ay48VYibIPA6SmD8u', 'ADMIN', 'viu106018@donga.edu.vn', '0367604684', 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.pinterest.com%2Fstarmanh%2Favatar-facebook%2F&psig=AOvVaw2sm0f-iaWQQze72W4YuLAu&ust=1748957676635000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCMDus5vt0o0DFQAAAAAdAAAAABAE'),
+--     (5, 'viu852005', '$2a$12$axP4gVxYOqfERUSuXHQYu.9RmoZ3VsGDMtoVC/d9ns4AmS2.Ql7p6', 'ADMIN', 'viuadmin@donga.edu.vn', '0367604685', 'https://i.pinimg.com/200x/c5/b9/ff/c5b9ffb0d6e4fad7e6f7df27f9545a93.jpg'),
+--     (6, 'temp_admin', '$2a$10$1c0sC4c2n3KeOM4CU22L2u9Pd6RL8gDe0KLPO9xlz7oszrVndgqwq', 'ADMIN', 'temp.admin@example.com', NULL, NULL);
 
 -- 3. Lớp học (class_room)
+-- Bỏ cột subject vì bảng class_room không có cột này trong PostgreSQL
 INSERT INTO class_room (
-    id, name, student_count, grade, subject, academic_year, code,
+    id, name, grade, academic_year, code,
     description, homeroom_teacher_id
 ) VALUES
-    (2, '12A1', NULL, '12', NULL, '2023-2025', '760616', '', 4),
-    (3, '12A2', NULL, '12', NULL, '2023-2028', '00920', '', 3);
+    (2, '12A1', '12', '2023-2025', '760616', '', 4),
+    (3, '12A2', '12', '2023-2028', '00920', '', 3);
 
--- 4. Học sinh (users_students)
-INSERT INTO users_students (
-    id, classroom, course, email, enrollment_date, full_name, gender,
-    major, phone, status, student_code, username, password, role,
-    teacher_id, class_room_id, address, avatar_url, date_of_birth,
-    birth_place, ethnicity, father_job, father_name, father_phone,
-    identity_issue_date, identity_issue_place, identity_number,
-    mother_job, mother_name, mother_phone, nationality, religion,
-    academic_performance, conduct
-) VALUES
-    (4, '', '2023-2025', 'hoaianh@tranning.edu.vn', '2025-07-02', 'Lệ Thị Hoài Anh', 'Nữ', NULL, '0367604684', 'Bảo lưu', 'K240003', 'hoaianh003', '$2a$10$AMA/Gj8Q.cdkI//J3.E/8ObswTVXstDj4ZgkJLb50kf.MEUUql9GC', 'STUDENT', NULL, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (5, '', '2023-2025', 'vanquy001@tranning.edu.vn', '2025-07-02', 'Nguyễn văn Quy', 'Nam', 'Văn', '0367604684', 'Đang học', 'K0001', 'vanquy001', '$2a$10$lrX/NQy12rzZROaPkQYs7u1jasRu.y/VVKvsJbd5EdEdNeK79dyhi', 'STUDENT', NULL, 2, '', 'https://cellphones.com.vn/sforum/wp-content/uploads/2023/11/avatar-vo-tri-54.jpg', NULL, 'Gia lai', '', '', '', '', NULL, '', '', '', '', '', '', NULL, NULL),
-    (6, '', '2023-2025', 'rmahviu005@tranning.edu.vn', '2022-02-02', 'rmahviu', 'Nam', 'Văn', '0367604684', 'Đang học', 'K0005', 'rmahviu005', '$2a$10$3rvaqhoRFDUHWUxF0CMro.r7qlzhm672t36rs2ZpE5BfTPwngAaXS', 'STUDENT', NULL, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (7, '', NULL, 'thihau006@tranning.edu.vn', '2025-06-04', 'Lê Thị Hậu', 'Nữ', NULL, '0367604684', 'Đang học', 'K0006', 'thihau006', '$2a$10$ANNBR/p/7zbCN806EBuR7O78kQxCsBTROaz6LRaf1AQoToMlQ7HXG', 'STUDENT', NULL, 3, 'Số 84, Phan Trọng Tuệ', 'https://cellphones.com.vn/sforum/wp-content/uploads/2024/02/avatar-anh-meo-cute-1.jpg', '2025-06-05', 'Gia lai', 'Jrai', '', 'Nguyễn văn A', '0123456789', '2025-06-05', '', '00000000076', '', 'Nguyễn thị B', '0123456789', 'Việt nam', 'không', NULL, NULL);
+-- -- 4. Học sinh (users_students)
+-- -- ĐÚNG CHUẨN: 32 cột (id + 30 trường dữ liệu + class_room_id)
+-- INSERT INTO users_students (
+--     id, full_name, student_code, username, email, phone, gender, major, course, classroom, status, enrollment_date, password, role,
+--     date_of_birth, address, avatar_url, birth_place, identity_number, identity_issue_date, identity_issue_place, ethnicity, religion, nationality,
+--     father_name, father_job, father_phone, mother_name, mother_job, mother_phone, class_room_id
+-- ) VALUES
+--     (4, 'Lệ Thị Hoài Anh', 'K240003', 'hoaianh003', 'hoaianh@tranning.edu.vn', '0367604684', 'Nữ', NULL, '2023-2025', '', 'Bảo lưu', '2025-07-02',
+--      '$2a$10$AMA/Gj8Q.cdkI//J3.E/8ObswTVXstDj4ZgkJLb50kf.MEUUql9GC', 'STUDENT',
+--      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+--      NULL, NULL, NULL, NULL, NULL, NULL, 2),
+
+--     (5, 'Nguyễn Văn Quy', 'K0001', 'vanquy001', 'vanquy001@tranning.edu.vn', '0367604684', 'Nam', 'Văn', '2023-2025', '', 'Đang học', '2025-07-02',
+--      '$2a$10$lrX/NQy12rzZROaPkQYs7u1jasRu.y/VVKvsJbd5EdEdNeK79dyhi', 'STUDENT',
+--      NULL, '', 'https://cellphones.com.vn/sforum/wp-content/uploads/2023/11/avatar-vo-tri-54.jpg', 'Gia Lai', '', NULL, '', 'Kinh', 'Không', 'Việt Nam',
+--      'Nguyễn Văn A', '', '0123456789', 'Nguyễn Thị B', '', '0123456789', 2),
+
+--     (6, 'Rmah Viu', 'K0005', 'rmahviu005', 'rmahviu005@tranning.edu.vn', '0367604684', 'Nam', 'Văn', '2023-2025', '', 'Đang học', '2022-02-02',
+--      '$2a$10$3rvaqhoRFDUHWUxF0CMro.r7qlzhm672t36rs2ZpE5BfTPwngAaXS', 'STUDENT',
+--      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+--      NULL, NULL, NULL, NULL, NULL, NULL, 2),
+
+--     (7, 'Lê Thị Hậu', 'K0006', 'thihau006', 'thihau006@tranning.edu.vn', '0367604684', 'Nữ', NULL, NULL, '', 'Đang học', '2025-06-04',
+--      '$2a$10$ANNBR/p/7zbCN806EBuR7O78kQxCsBTROaz6LRaf1AQoToMlQ7HXG', 'STUDENT',
+--      '2025-06-05', 'Số 84, Phan Trọng Tuệ', 'https://cellphones.com.vn/sforum/wp-content/uploads/2024/02/avatar-anh-meo-cute-1.jpg', 'Gia Lai', '00000000076', NULL, '', 'Jrai', 'Không', 'Việt Nam',
+--      'Nguyễn Văn A', '', '0123456789', 'Nguyễn Thị B', '', '0123456789', 3);
+
 
 -- 5. Môn học (subject)
 INSERT INTO subject (id, name) VALUES

@@ -17,4 +17,8 @@ public interface UsersStudentsRepository extends JpaRepository<UsersStudents, Lo
 
     // Lấy danh sách học sinh theo classRoom id
     List<UsersStudents> findByClassRoom_Id(Long classRoomId);
+
+    // Sắp xếp theo tên (không dùng COLLATE, chỉ dùng cho PostgreSQL)
+    @Query("SELECT u FROM UsersStudents u WHERE u.classRoom.id = :classRoomId ORDER BY u.fullName ASC")
+    List<UsersStudents> findStudentsByClassRoomOrderByFullName(@Param("classRoomId") Long classRoomId);
 }

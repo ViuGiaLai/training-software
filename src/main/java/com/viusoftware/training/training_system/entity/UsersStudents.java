@@ -27,28 +27,25 @@ public class UsersStudents {
     private String gender;
     private String major;
     private String course;
-    private String classroom; // Tên lớp dạng String (VD: "10A1")
+    private String classroom;
     private String status;
     private LocalDate enrollmentDate;
     @Column(nullable = false)
     private String password;
     private String role;
 
-    // Bổ sung các trường mới
-    private LocalDate dateOfBirth; // Ngày sinh
-    private String address;        // Địa chỉ
-    private String avatarUrl;      // Ảnh đại diện
+    private LocalDate dateOfBirth;
+    private String address;
+    private String avatarUrl;
 
-    // Thông tin cá nhân bổ sung
-    private String birthPlace;         // Nơi sinh
-    private String identityNumber;     // CCCD/CMND
-    private LocalDate identityIssueDate; // Ngày cấp
-    private String identityIssuePlace; // Nơi cấp
-    private String ethnicity;          // Dân tộc
-    private String religion;           // Tôn giáo
-    private String nationality;        // Quốc tịch
+    private String birthPlace;
+    private String identityNumber;
+    private LocalDate identityIssueDate;
+    private String identityIssuePlace;
+    private String ethnicity;
+    private String religion;
+    private String nationality;
 
-    // Thông tin gia đình
     private String fatherName;
     private String fatherJob;
     private String fatherPhone;
