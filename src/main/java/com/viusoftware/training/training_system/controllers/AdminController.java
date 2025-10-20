@@ -101,12 +101,62 @@ public class AdminController {
         return "dashboard/users/user-list :: content";
     }
 
-    @GetMapping("/dashboard/course-management/fragment")
-    public String courseManagementFragment(Model model) {
+    @GetMapping("/dashboard/course-management")
+    public String courseManagement(Model model) {
         model.addAttribute("courses", courseRepository.findAll());
         model.addAttribute("classRooms", classRoomRepository.findAll());
         model.addAttribute("teachers", usersTeachersRepository.findAll());
-        return "dashboard/course-management :: content";
+        return "dashboard/course-management";
+    }
+
+    @GetMapping("/admin/dashboard/course-management/add")
+    public String showAddCourseForm(Model model) {
+        model.addAttribute("classRooms", classRoomRepository.findAll());
+        model.addAttribute("teachers", usersTeachersRepository.findAll());
+        return "dashboard/course-management/add-course";
+    }
+
+    @PostMapping("/admin/dashboard/course-management/add")
+    public String addCourse(@RequestParam String name, @RequestParam Long classRoomId, @RequestParam Long teacherId, @RequestParam String description, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        try {
+            com.viusoftware.training.training_system.entity.Course course = new com.viusoftware.training.training_system.entity.Course();
+            course.setName(name);
+            course.setClassRoom(classRoomRepository.findById(classRoomId).orElse(null));
+            course.setTeacher(usersTeachersRepository.findById(teacherId).orElse(null));
+            course.setDescription(description);
+            courseRepository.save(course);
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm khóa học thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm khóa học: " + e.getMessage());
+        }
+        return "redirect:/admin/dashboard#course-management";
+    }
+
+    @PostMapping("/admin/dashboard/course-management/edit")
+    public String editCourse(@RequestParam Long id, @RequestParam String name, @RequestParam Long classRoomId, @RequestParam Long teacherId, @RequestParam String description, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        try {
+            com.viusoftware.training.training_system.entity.Course course = courseRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid course Id:" + id));
+            course.setName(name);
+            course.setClassRoom(classRoomRepository.findById(classRoomId).orElse(null));
+            course.setTeacher(usersTeachersRepository.findById(teacherId).orElse(null));
+            course.setDescription(description);
+            courseRepository.save(course);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật khóa học thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật khóa học: " + e.getMessage());
+        }
+        return "redirect:/admin/dashboard#course-management";
+    }
+
+    @PostMapping("/admin/dashboard/course-management/delete")
+    public String deleteCourse(@RequestParam Long id, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        try {
+            courseRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa khóa học thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa khóa học: " + e.getMessage());
+        }
+        return "redirect:/admin/dashboard#course-management";
     }
 
     @GetMapping("/dashboard/exam-management/fragment")
@@ -183,21 +233,39 @@ public class AdminController {
         return "dashboard/schedule-management :: content";
     }
 
-    @GetMapping("/dashboard/classroom/fragment")
-    public String classroomFragment(
-        @RequestParam(required = false) String grade,
-        @RequestParam(required = false) String academicYear,
-        @RequestParam(required = false) Long teacherId,
-        Model model) {
-        java.util.List classRooms = classRoomRepository.findAllWithStudents();
-        java.util.Map<Long, java.util.List> sortedStudentsMap = new java.util.HashMap<>();
-        for (Object cl : classRooms) {
-            Long id = ((com.viusoftware.training.training_system.entity.ClassRoom) cl).getId();
-            sortedStudentsMap.put(id, classRoomRepository.findStudentsByClassRoomOrderByFullName(id));
+    @GetMapping("/dashboard/classroom")
+    public String classroomPage(
+            Model model,
+            @RequestParam(required = false) String grade,
+            @RequestParam(required = false) String academicYear,
+            @RequestParam(required = false) Long teacherId
+    ) {
+        java.util.List<com.viusoftware.training.training_system.entity.ClassRoom> classRooms = classRoomRepository.findAllWithStudents();
+        if (grade != null && !grade.isBlank()) {
+            classRooms = classRooms.stream()
+                .filter(c -> grade.equals(c.getGrade() != null ? c.getGrade() : ""))
+                .collect(java.util.stream.Collectors.toList());
         }
-        java.util.List grades = classRoomRepository.findDistinctGrades();
-        java.util.List academicYears = classRoomRepository.findDistinctAcademicYears();
-        java.util.List teachers = usersTeachersRepository.findAll();
+        if (academicYear != null && !academicYear.isBlank()) {
+            classRooms = classRooms.stream()
+                .filter(c -> academicYear.equals(c.getAcademicYear() != null ? c.getAcademicYear() : ""))
+                .collect(java.util.stream.Collectors.toList());
+        }
+        if (teacherId != null) {
+            classRooms = classRooms.stream()
+                .filter(c -> c.getHomeroomTeacher() != null && teacherId.equals(c.getHomeroomTeacher().getId()))
+                .collect(java.util.stream.Collectors.toList());
+        }
+        // Chuẩn bị map classId -> sorted students
+        java.util.Map<Long, java.util.List<com.viusoftware.training.training_system.entity.UsersStudents>> sortedStudentsMap = new java.util.HashMap<>();
+        for (com.viusoftware.training.training_system.entity.ClassRoom cl : classRooms) {
+            java.util.List<com.viusoftware.training.training_system.entity.UsersStudents> sortedStudents = classRoomRepository.findStudentsByClassRoomOrderByFullName(cl.getId());
+            sortedStudentsMap.put(cl.getId(), sortedStudents);
+        }
+
+        java.util.List<String> grades = classRoomRepository.findDistinctGrades();
+        java.util.List<String> academicYears = classRoomRepository.findDistinctAcademicYears();
+        java.util.List<com.viusoftware.training.training_system.entity.UsersTeachers> teachers = usersTeachersRepository.findAll();
 
         model.addAttribute("classRooms", classRooms);
         model.addAttribute("sortedStudentsMap", sortedStudentsMap);
@@ -208,7 +276,67 @@ public class AdminController {
         model.addAttribute("selectedYear", academicYear);
         model.addAttribute("selectedTeacherId", teacherId);
 
-        return "dashboard/classroom :: content";
+        return "dashboard/classroom";
+    }
+
+    @PostMapping("/dashboard/classroom/add")
+    public String addClassRoom(
+            @RequestParam String code,
+            @RequestParam String name,
+            @RequestParam String grade,
+            @RequestParam String academicYear,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) Long homeroomTeacherId,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes
+    ) {
+        try {
+            com.viusoftware.training.training_system.entity.ClassRoom classRoom = new com.viusoftware.training.training_system.entity.ClassRoom();
+            classRoom.setCode(code);
+            classRoom.setName(name);
+            classRoom.setGrade(grade);
+            classRoom.setAcademicYear(academicYear);
+            classRoom.setDescription(description);
+            if (homeroomTeacherId != null) {
+                com.viusoftware.training.training_system.entity.UsersTeachers teacher = usersTeachersRepository.findById(homeroomTeacherId).orElse(null);
+                classRoom.setHomeroomTeacher(teacher);
+            } else {
+                classRoom.setHomeroomTeacher(null);
+            }
+            classRoomRepository.save(classRoom);
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm lớp thành công!");
+            return "redirect:/admin/dashboard/classroom";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Có lỗi xảy ra: " + e.getMessage());
+            return "redirect:/admin/dashboard/classroom";
+        }
+    }
+
+    @PostMapping("/dashboard/classroom/edit")
+    public String editClassRoom(
+            @RequestParam Long id,
+            @RequestParam String code,
+            @RequestParam String name,
+            @RequestParam String grade,
+            @RequestParam String academicYear,
+            @RequestParam(required = false) Long homeroomTeacherId,
+            @RequestParam(required = false) String description
+    ) {
+        com.viusoftware.training.training_system.entity.ClassRoom classRoom = classRoomRepository.findById(id).orElse(null);
+        if (classRoom != null) {
+            classRoom.setCode(code);
+            classRoom.setName(name);
+            classRoom.setGrade(grade);
+            classRoom.setAcademicYear(academicYear);
+            classRoom.setDescription(description);
+            if (homeroomTeacherId != null) {
+                com.viusoftware.training.training_system.entity.UsersTeachers teacher = usersTeachersRepository.findById(homeroomTeacherId).orElse(null);
+                classRoom.setHomeroomTeacher(teacher);
+            } else {
+                classRoom.setHomeroomTeacher(null);
+            }
+            classRoomRepository.save(classRoom);
+        }
+        return "redirect:/admin/dashboard/classroom";
     }
 
     @GetMapping("/dashboard/class-assignment/fragment")

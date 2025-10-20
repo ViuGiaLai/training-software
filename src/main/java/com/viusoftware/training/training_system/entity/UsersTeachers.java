@@ -1,10 +1,15 @@
 package com.viusoftware.training.training_system.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
+
+@Data
 @Entity
-@Table(name = "users_teachers")
+@Table(name = "users_teachers", schema = "public")
 public class UsersTeachers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +30,13 @@ public class UsersTeachers {
     private String degree;
     private String department;
     private String status;
-    private LocalDate createdAt;
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
     // Getters and setters
     public Long getId() { return id; }
@@ -64,8 +75,11 @@ public class UsersTeachers {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public LocalDate getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
 
 // Make sure you do NOT have @Data or @ToString/@EqualsAndHashCode if you have relationships

@@ -13,9 +13,9 @@
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Quản lý khóa học</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+            <a th:href="@{/admin/dashboard/course-management/add}" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i>Thêm khóa học
-            </button>
+            </a>
         </div>
         <table class="table table-bordered table-hover">
             <thead class="table-light">
@@ -119,7 +119,7 @@
                                 <label class="form-label">Giáo viên</label>
                                 <select name="teacherId" class="form-select" required>
                                     <option value="">-- Chọn giáo viên --</option>
-                                    <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}" th:selected="${t.id == c.teacher?.id}"></option>
+                                    <option th:each="teacher : ${teachers}" th:value="${teacher.id}" th:text="${teacher.fullName}" th:selected="${c.teacher != null and teacher.id == c.teacher.id}"></option>
                                 </select>
                             </div>
                             <div class="mb-2">
@@ -137,49 +137,6 @@
         </div>
     </div>
     <script src="/js/bootstrap.bundle.min.js"></script>
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        var classRoomMap = {};
-        /*[# th:each="cl : ${classRooms}" ]*/
-        /*[# th:inline="javascript" ]*/
-        /*[[
-            for (var i = 0; i < [[${classRooms.size()}]]; i++) {
-                var cl = [[${classRooms[i]}]];
-                classRoomMap[cl.id] = {
-                    grade: cl.grade,
-                    subject: cl.subject,
-                    studentCount: cl.studentCount
-                };
-            }
-        ]]*/
-        /*]]>*/
-        // Nếu trên không hoạt động, bạn có thể truyền dữ liệu classRooms qua JSON từ controller và parse lại ở đây.
-
-        function updateClassInfo(type, cid) {
-            var select, gradeInput, subjectInput, studentCountInput;
-            if (type === 'add') {
-                select = document.getElementById('add-classRoomSelect');
-                gradeInput = document.getElementById('add-grade');
-                subjectInput = document.getElementById('add-subject');
-                studentCountInput = document.getElementById('add-studentCount');
-            } else {
-                select = document.querySelector('.edit-classRoomSelect[data-cid="' + cid + '"]');
-                gradeInput = document.getElementById('edit-grade-' + cid);
-                subjectInput = document.getElementById('edit-subject-' + cid);
-                studentCountInput = document.getElementById('edit-studentCount-' + cid);
-            }
-            var val = select.value;
-            if (classRoomMap[val]) {
-                gradeInput.value = classRoomMap[val].grade;
-                subjectInput.value = classRoomMap[val].subject;
-                studentCountInput.value = classRoomMap[val].studentCount;
-            } else {
-                gradeInput.value = '';
-                subjectInput.value = '';
-                studentCountInput.value = '';
-            }
-        }
-    </script>
 </div>
 </body>
 </html>

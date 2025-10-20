@@ -8,6 +8,7 @@
     <!-- Sử dụng Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/admin-style.css">
+    <link rel="stylesheet" href="/css/teacher-list.css" id="teacher-list-css">
     <link rel="icon" href="/images/logo_training_learning.png" type="image/x-icon">
     <style>
         /* Đảm bảo flexbox hoạt động tốt khi sidebar dài */
@@ -88,7 +89,7 @@
                 <h3>Trung tâm Đào tạo</h3>
             </div>
             <div class="dashboard">
-                <a href="/admin/dashboard/dashboard" target="mainFrame" id="dashboard-link">Dashboard</a>
+                <a href="#dashboard" id="dashboard-link" class="active">Dashboard</a>
             </div>
             <ul class="sidebar-menu">
                 <li class="menu-category"><i class="fas fa-sliders-h"></i> Chức năng chính</li>
@@ -166,95 +167,22 @@
         </main>
     </div>
 
+    <!-- Core JS Files -->
     <script src="/js/jquery.min.js"></script>
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="/js/chart.min.js"></script>
-    <script src="/js/admin-script.js"></script>
+    <script src="/js/admin-script.js" type="application/javascript"></script>
+
+    <!-- Initialize the admin interface -->
     <script>
-        // Dropdown toggle logic - chỉ mở 1 dropdown, đóng các dropdown khác
-        function toggleDropdown(event, id) {
-            event.preventDefault();
-            // Đóng tất cả các submenu khác
-            document.querySelectorAll('.submenu').forEach(function(el) {
-                if (el.id !== id) el.style.display = "none";
-            });
-            // Toggle submenu được chọn
-            var el = document.getElementById(id);
-            if (el.style.display === "none" || el.style.display === "") {
-                el.style.display = "block";
-            } else {
-                el.style.display = "none";
-            }
-        }
-
-        // Map page key to fragment endpoint
-        var pageMap = {
-            'dashboard': '/admin/dashboard/dashboard/fragment',
-            'user-list': '/admin/dashboard/user-list/fragment',
-            'user-student-list': '/admin/dashboard/users/user-student-list/fragment',
-            'user-teacher-list': '/admin/dashboard/users/user-teacher-list/fragment',
-            'course-management': '/admin/dashboard/course-management/fragment',
-            'exam-management': '/admin/dashboard/exam-management/fragment',
-            'schedule-management': '/admin/dashboard/schedule-management/fragment',
-            'classroom': '/admin/dashboard/classroom/fragment',
-            'class-assignment': '/admin/dashboard/class-assignment/fragment'
-            // ...bổ sung các key khác nếu có...
-        };
-
-        // Lấy key từ href
-        function getPageKeyFromHref(href) {
-            // Ví dụ: /admin/dashboard/course-management -> course-management
-            var parts = href.split('/');
-            var last = parts[parts.length - 1];
-            // Nếu là fragment thì lấy phần trước đó
-            if (last === 'fragment') return parts[parts.length - 2];
-            return last || 'dashboard';
-        }
-
-        // Load fragment vào mainContent
-        function loadFragment(pageKey) {
-            var url = pageMap[pageKey] || pageMap['dashboard'];
-            fetch(url)
-                .then(res => res.text())
-                .then(html => {
-                    var parser = new DOMParser();
-                    var doc = parser.parseFromString(html, "text/html");
-                    var content = doc.querySelector('[data-fragment="content"]');
-                    document.getElementById('mainContent').innerHTML = content ? content.outerHTML : html;
-                });
-        }
-
-        // Khi click menu, load fragment và đổi hash, KHÔNG chuyển trang
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('a[target="mainFrame"]').forEach(function(link) {
-                link.addEventListener('click', function(e) {
-                    var href = link.getAttribute('href');
-                    var pageKey = getPageKeyFromHref(href);
-                    window.location.hash = pageKey;
-                    loadFragment(pageKey);
-                    e.preventDefault();
-                    return false;
-                });
-            });
-
-            // Khi load trang, nếu có hash thì load đúng fragment
-            function loadFromHash() {
-                var hash = window.location.hash;
-                var pageKey = hash ? hash.replace('#', '') : 'dashboard';
-                loadFragment(pageKey);
-            }
-            loadFromHash();
-
-            // Khi hash thay đổi (bấm back/forward), cập nhật fragment
-            window.addEventListener('hashchange', loadFromHash);
-
-            // Nếu truy cập trực tiếp vào các trang con (không có hash), tự động chuyển về layout tổng thể và load fragment
-            var path = window.location.pathname;
-            var match = path.match(/\/admin\/dashboard\/([a-zA-Z0-9\-]+)$/);
-            if (match && !window.location.hash) {
-                var pageKey = match[1];
-                window.location.hash = pageKey;
-                loadFragment(pageKey);
+            // All initialization is now handled in admin-script.js
+            // This ensures a single source of truth for the admin interface behavior
+            
+            // Set active menu based on current URL
+            const currentPath = window.location.pathname;
+            if (currentPath.includes('dashboard')) {
+                updateActiveMenu('dashboard');
             }
         });
     </script>

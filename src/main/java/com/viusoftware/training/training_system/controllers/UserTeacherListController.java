@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.viusoftware.training.training_system.entity.UsersTeachers;
 import com.viusoftware.training.training_system.repository.UsersTeachersRepository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.io.ByteArrayOutputStream;
 import org.apache.poi.ss.usermodel.*;
@@ -31,7 +31,7 @@ public class UserTeacherListController {
     private PasswordEncoder passwordEncoder;
 
     @GetMapping("/admin/dashboard/users/user-teacher-list")
-    public String userTeacherList(Model model) {
+    public String userTeacherList(Model model, @RequestParam(required = false) String fragment) {
         model.addAttribute("teachers", usersTeachersRepository.findAll());
         // Dùng danh sách cố định cho THPT
         model.addAttribute("departments", java.util.List.of(
@@ -46,6 +46,10 @@ public class UserTeacherListController {
         model.addAttribute("statuses", java.util.List.of(
             "Đang công tác", "Đã nghỉ", "Tạm nghỉ"
         ));
+        
+        if ("fragment".equals(fragment)) {
+            return "dashboard/users/user-teacher-list :: content";
+        }
         return "dashboard/users/user-teacher-list";
     }
 
@@ -75,7 +79,7 @@ public class UserTeacherListController {
             teacher.setDegree(degree);
             teacher.setStatus(status);
             teacher.setAvatar(avatar);
-            teacher.setCreatedAt(java.time.LocalDate.now());
+            teacher.setCreatedAt(LocalDateTime.now());
             teacher.setPassword(passwordEncoder.encode(password));
             teacher.setRole("TEACHER");
             usersTeachersRepository.save(teacher);

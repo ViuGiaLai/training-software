@@ -1,0 +1,191 @@
+
+/* Teacher List Card */
+.teacher-list-card {
+    background-color: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.teacher-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.teacher-list-title {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.teacher-list-title i {
+    margin-right: 12px;
+    color: var(--primary-color);
+}
+
+.teacher-list-search {
+    position: relative;
+    width: 300px;
+}
+
+.teacher-list-search input {
+    width: 100%;
+    padding: 8px 16px 8px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 14px;
+}
+
+.teacher-list-search i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-color);
+}
+
+/* Teacher Table */
+.teacher-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.teacher-table th,
+.teacher-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.teacher-table th {
+    font-weight: 600;
+    color: var(--dark-color);
+    background-color: #f8fafc;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.teacher-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Degree and Status text color */
+.teacher-table td {
+    color: #000000; /* Set default text color for all table cells */
+}
+
+/* Degree badge styles */
+.badge-degree, 
+.badge-degree-ts,
+.badge-degree-cn {
+    color: #000000 !important; /* Force black text for degree badges */
+    background-color: #f0f0f0; /* Light gray background */
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Status badge styles */
+.badge-status {
+    color: #000000 !important; /* Force black text for status badges */
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Status specific colors */
+.badge-active {
+    background-color: #d1fae5; /* Light green */
+}
+
+.badge-leave {
+    background-color: #fee2e2; /* Light red */
+}
+
+.badge-locked {
+    background-color: #fef3c7; /* Light yellow */
+}
+
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-view {
+    background-color: var(--info-color);
+}
+
+.btn-edit {
+    background-color: var(--warning-color);
+}
+
+.btn-delete {
+    background-color: var(--danger-color);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .teacher-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .teacher-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .teacher-list-search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .teacher-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .teacher-table th,
+    .teacher-table td {
+        padding: 12px 8px;
+    }
+    
+    .teacher-table th:first-child,
+    .teacher-table td:first-child {
+        padding-left: 16px;
+    }
+    
+    .teacher-table th:last-child,
+    .teacher-table td:last-child {
+        padding-right: 16px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+    }
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm khóa học</title>
+</head>
+<body>
+<div data-fragment="content" th:fragment="content">
+    <div class="container-fluid py-4">
+        <h2 class="mb-4">Thêm khóa học mới</h2>
+        <div class="card">
+            <div class="card-body">
+                <form th:action="@{/admin/dashboard/course-management/add}" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Tên khóa học</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="classRoomId" class="form-label">Lớp</label>
+                        <select class="form-select" id="classRoomId" name="classRoomId" required>
+                            <option value="">-- Chọn lớp --</option>
+                            <option th:each="cl : ${classRooms}" th:value="${cl.id}" th:text="${cl.name}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="teacherId" class="form-label">Giáo viên</label>
+                        <select class="form-select" id="teacherId" name="teacherId" required>
+                            <option value="">-- Chọn giáo viên --</option>
+                            <option th:each="teacher : ${teachers}" th:value="${teacher.id}" th:text="${teacher.fullName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu khóa học</button>
+                    <a th:href="@{/admin/dashboard#course-management}" class="btn btn-secondary">Hủy</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
