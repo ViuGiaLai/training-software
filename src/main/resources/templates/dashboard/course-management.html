@@ -8,175 +8,178 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Quản lý khóa học</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
-            <i class="fas fa-plus me-2"></i>Thêm khóa học
-        </button>
-    </div>
-    <table class="table table-bordered table-hover">
-        <thead class="table-light">
-            <tr>
-                <th>Tên khóa học</th>
-                <th>Khối</th>
-                <th>Giáo viên</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="c : ${courses}">
-                <td th:text="${c.name}"></td>
-                <!-- Nếu classRoom không tồn tại hoặc không chắc chắn, bỏ dòng này -->
-                <!-- <td th:text="${c.classRoom != null ? c.classRoom.grade : ''}"></td> -->
-                <td th:text="${c.teacher != null ? c.teacher.fullName : ''}"></td>
-                <td>
-                    <a th:href="@{/admin/dashboard/course-management/detail(id=${c.id})}" class="btn btn-info btn-sm">Chi tiết</a>
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" th:attr="data-bs-target='#editCourseModal'+${c.id}">Sửa</button>
-                    <form th:action="@{/admin/dashboard/course-management/delete}" method="post" style="display:inline;">
-                        <input type="hidden" name="id" th:value="${c.id}">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xóa khóa học này?')">Xóa</button>
-                    </form>
-                </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(courses)}">
-                <td colspan="4" class="text-center text-muted">Không có khóa học nào</td>
-            </tr>
-        </tbody>
-    </table>
-    <!-- Modal Thêm -->
-    <div class="modal fade" id="addCourseModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form th:action="@{/admin/dashboard/course-management/add}" method="post" class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Thêm khóa học</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <label class="form-label">Tên khóa học</label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Lớp</label>
-                        <select name="classRoomId" class="form-select" id="add-classRoomSelect" required onchange="updateClassInfo('add')">
-                            <option value="">-- Chọn lớp --</option>
-                            <option th:each="cl : ${classRooms}" th:value="${cl.id}" th:text="${cl.name}"></option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Khối</label>
-                        <input type="text" class="form-control" id="add-grade" readonly>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Giáo viên</label>
-                        <select name="teacherId" class="form-select" required>
-                            <option value="">-- Chọn giáo viên --</option>
-                            <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Mô tả</label>
-                        <textarea name="description" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Thêm</button>
-                </div>
-            </form>
+<div data-fragment="content" th:fragment="content">
+    <!-- Phần nội dung động sẽ được load vào <div id="mainContent"></div> -->
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Quản lý khóa học</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                <i class="fas fa-plus me-2"></i>Thêm khóa học
+            </button>
         </div>
-    </div>
-    <!-- Modal Sửa cho từng course -->
-    <div th:each="c : ${courses}">
-        <div class="modal fade" th:id="'editCourseModal'+${c.id}" tabindex="-1">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Tên khóa học</th>
+                    <th>Khối</th>
+                    <th>Giáo viên</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="c : ${courses}">
+                    <td th:text="${c.name}"></td>
+                    <!-- Nếu classRoom không tồn tại hoặc không chắc chắn, bỏ dòng này -->
+                    <!-- <td th:text="${c.classRoom != null ? c.classRoom.grade : ''}"></td> -->
+                    <td th:text="${c.teacher != null ? c.teacher.fullName : ''}"></td>
+                    <td>
+                        <a th:href="@{/admin/dashboard/course-management/detail(id=${c.id})}" class="btn btn-info btn-sm">Chi tiết</a>
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" th:attr="data-bs-target='#editCourseModal'+${c.id}">Sửa</button>
+                        <form th:action="@{/admin/dashboard/course-management/delete}" method="post" style="display:inline;">
+                            <input type="hidden" name="id" th:value="${c.id}">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xóa khóa học này?')">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(courses)}">
+                    <td colspan="4" class="text-center text-muted">Không có khóa học nào</td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- Modal Thêm -->
+        <div class="modal fade" id="addCourseModal" tabindex="-1">
             <div class="modal-dialog">
-                <form th:action="@{/admin/dashboard/course-management/edit}" method="post" class="modal-content">
-                    <input type="hidden" name="id" th:value="${c.id}">
+                <form th:action="@{/admin/dashboard/course-management/add}" method="post" class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Sửa khóa học</h5>
+                        <h5 class="modal-title">Thêm khóa học</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-2">
                             <label class="form-label">Tên khóa học</label>
-                            <input type="text" name="name" class="form-control" th:value="${c.name}" required>
+                            <input type="text" name="name" class="form-control" required>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Lớp</label>
-                            <select name="classRoomId" class="form-select edit-classRoomSelect" th:attr="data-cid=${c.id}" required onchange="updateClassInfo('edit', [[${c.id}]])">
+                            <select name="classRoomId" class="form-select" id="add-classRoomSelect" required onchange="updateClassInfo('add')">
                                 <option value="">-- Chọn lớp --</option>
-                                <option th:each="cl : ${classRooms}" th:value="${cl.id}" th:text="${cl.name}" th:selected="${cl.id == c.classRoom?.id}"></option>
+                                <option th:each="cl : ${classRooms}" th:value="${cl.id}" th:text="${cl.name}"></option>
                             </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Khối</label>
-                            <input type="text" class="form-control" th:id="'edit-grade-'+${c.id}" th:value="${c.classRoom?.grade}" readonly>
+                            <input type="text" class="form-control" id="add-grade" readonly>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Giáo viên</label>
                             <select name="teacherId" class="form-select" required>
                                 <option value="">-- Chọn giáo viên --</option>
-                                <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}" th:selected="${t.id == c.teacher?.id}"></option>
+                                <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
                             </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Mô tả</label>
-                            <textarea name="description" class="form-control" th:text="${c.description}"></textarea>
+                            <textarea name="description" class="form-control"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary">Lưu</button>
+                        <button type="submit" class="btn btn-primary">Thêm</button>
                     </div>
                 </form>
             </div>
         </div>
+        <!-- Modal Sửa cho từng course -->
+        <div th:each="c : ${courses}">
+            <div class="modal fade" th:id="'editCourseModal'+${c.id}" tabindex="-1">
+                <div class="modal-dialog">
+                    <form th:action="@{/admin/dashboard/course-management/edit}" method="post" class="modal-content">
+                        <input type="hidden" name="id" th:value="${c.id}">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Sửa khóa học</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-2">
+                                <label class="form-label">Tên khóa học</label>
+                                <input type="text" name="name" class="form-control" th:value="${c.name}" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Lớp</label>
+                                <select name="classRoomId" class="form-select edit-classRoomSelect" th:attr="data-cid=${c.id}" required onchange="updateClassInfo('edit', [[${c.id}]])">
+                                    <option value="">-- Chọn lớp --</option>
+                                    <option th:each="cl : ${classRooms}" th:value="${cl.id}" th:text="${cl.name}" th:selected="${cl.id == c.classRoom?.id}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Khối</label>
+                                <input type="text" class="form-control" th:id="'edit-grade-'+${c.id}" th:value="${c.classRoom?.grade}" readonly>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Giáo viên</label>
+                                <select name="teacherId" class="form-select" required>
+                                    <option value="">-- Chọn giáo viên --</option>
+                                    <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}" th:selected="${t.id == c.teacher?.id}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Mô tả</label>
+                                <textarea name="description" class="form-control" th:text="${c.description}"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Lưu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-<script src="/js/bootstrap.bundle.min.js"></script>
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    var classRoomMap = {};
-    /*[# th:each="cl : ${classRooms}" ]*/
-    /*[# th:inline="javascript" ]*/
-    /*[[
-        for (var i = 0; i < [[${classRooms.size()}]]; i++) {
-            var cl = [[${classRooms[i]}]];
-            classRoomMap[cl.id] = {
-                grade: cl.grade,
-                subject: cl.subject,
-                studentCount: cl.studentCount
-            };
-        }
-    ]]*/
-    /*]]>*/
-    // Nếu trên không hoạt động, bạn có thể truyền dữ liệu classRooms qua JSON từ controller và parse lại ở đây.
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var classRoomMap = {};
+        /*[# th:each="cl : ${classRooms}" ]*/
+        /*[# th:inline="javascript" ]*/
+        /*[[
+            for (var i = 0; i < [[${classRooms.size()}]]; i++) {
+                var cl = [[${classRooms[i]}]];
+                classRoomMap[cl.id] = {
+                    grade: cl.grade,
+                    subject: cl.subject,
+                    studentCount: cl.studentCount
+                };
+            }
+        ]]*/
+        /*]]>*/
+        // Nếu trên không hoạt động, bạn có thể truyền dữ liệu classRooms qua JSON từ controller và parse lại ở đây.
 
-    function updateClassInfo(type, cid) {
-        var select, gradeInput, subjectInput, studentCountInput;
-        if (type === 'add') {
-            select = document.getElementById('add-classRoomSelect');
-            gradeInput = document.getElementById('add-grade');
-            subjectInput = document.getElementById('add-subject');
-            studentCountInput = document.getElementById('add-studentCount');
-        } else {
-            select = document.querySelector('.edit-classRoomSelect[data-cid="' + cid + '"]');
-            gradeInput = document.getElementById('edit-grade-' + cid);
-            subjectInput = document.getElementById('edit-subject-' + cid);
-            studentCountInput = document.getElementById('edit-studentCount-' + cid);
+        function updateClassInfo(type, cid) {
+            var select, gradeInput, subjectInput, studentCountInput;
+            if (type === 'add') {
+                select = document.getElementById('add-classRoomSelect');
+                gradeInput = document.getElementById('add-grade');
+                subjectInput = document.getElementById('add-subject');
+                studentCountInput = document.getElementById('add-studentCount');
+            } else {
+                select = document.querySelector('.edit-classRoomSelect[data-cid="' + cid + '"]');
+                gradeInput = document.getElementById('edit-grade-' + cid);
+                subjectInput = document.getElementById('edit-subject-' + cid);
+                studentCountInput = document.getElementById('edit-studentCount-' + cid);
+            }
+            var val = select.value;
+            if (classRoomMap[val]) {
+                gradeInput.value = classRoomMap[val].grade;
+                subjectInput.value = classRoomMap[val].subject;
+                studentCountInput.value = classRoomMap[val].studentCount;
+            } else {
+                gradeInput.value = '';
+                subjectInput.value = '';
+                studentCountInput.value = '';
+            }
         }
-        var val = select.value;
-        if (classRoomMap[val]) {
-            gradeInput.value = classRoomMap[val].grade;
-            subjectInput.value = classRoomMap[val].subject;
-            studentCountInput.value = classRoomMap[val].studentCount;
-        } else {
-            gradeInput.value = '';
-            subjectInput.value = '';
-            studentCountInput.value = '';
-        }
-    }
-</script>
+    </script>
+</div>
 </body>
 </html>

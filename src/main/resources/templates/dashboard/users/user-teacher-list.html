@@ -312,41 +312,338 @@
     </style>
 </head>
 <body>
-    <div class="main-container container-fluid">
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="d-flex justify-content-between align-items-center flex-wrap">
-                <div>
-                    <h1 class="page-title">Quản lý giảng viên</h1>
-                    <p class="page-description mb-0">Quản lý thông tin giảng viên trong hệ thống</p>
-                </div>
-                <div class="d-flex gap-2 mt-2 mt-md-0">
-                    <a href="#" class="btn btn-light action-btn download-btn" id="downloadExcelBtn">
-                        <i class="fas fa-download me-2"></i> Xuất Excel
-                    </a>
-                    <a href="#" class="btn btn-primary action-btn" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
-                        <i class="fas fa-plus me-2"></i> Thêm giảng viên
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Filter Card -->
-        <div class="card filter-card">
-            <div class="card-header">
-                <i class="fas fa-filter me-2"></i> Bộ lọc và tìm kiếm
-            </div>
-            <div class="card-body">
-                <form class="row g-3 align-items-center" id="filterForm" method="get" th:action="@{/admin/dashboard/users/user-teacher-list}">
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <span class="input-group-text bg-transparent"><i class="fas fa-search"></i></span>
-                            <input type="text" class="form-control" name="keyword" placeholder="Tìm kiếm..." th:value="${keyword}">
-                        </div>
+    <!-- Phần nội dung động sẽ được load vào <div id="mainContent"></div> -->
+    <div data-fragment="content" th:fragment="content">
+        <div class="main-container container-fluid">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h1 class="page-title">Quản lý giảng viên</h1>
+                        <p class="page-description mb-0">Quản lý thông tin giảng viên trong hệ thống</p>
                     </div>
-                    <div class="col-md-2">
-                        <select class="form-select" name="department">
-                            <option value="">Tất cả tổ/bộ môn</option>
+                    <div class="d-flex gap-2 mt-2 mt-md-0">
+                        <a href="#" class="btn btn-light action-btn download-btn" id="downloadExcelBtn">
+                            <i class="fas fa-download me-2"></i> Xuất Excel
+                        </a>
+                        <a href="#" class="btn btn-primary action-btn" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
+                            <i class="fas fa-plus me-2"></i> Thêm giảng viên
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter Card -->
+            <div class="card filter-card">
+                <div class="card-header">
+                    <i class="fas fa-filter me-2"></i> Bộ lọc và tìm kiếm
+                </div>
+                <div class="card-body">
+                    <form class="row g-3 align-items-center" id="filterForm" method="get" th:action="@{/admin/dashboard/users/user-teacher-list}">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" name="keyword" placeholder="Tìm kiếm..." th:value="${keyword}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="department">
+                                <option value="">Tất cả tổ/bộ môn</option>
+                                <option>Tổ Toán</option>
+                                <option>Tổ Lý</option>
+                                <option>Tổ Hóa</option>
+                                <option>Tổ Văn</option>
+                                <option>Tổ Anh</option>
+                                <option>Tổ Sinh</option>
+                                <option>Tổ Sử</option>
+                                <option>Tổ Địa</option>
+                                <option>Tổ Tin học</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="position">
+                                <option value="">Tất cả chức danh</option>
+                                <option>Giáo viên</option>
+                                <option>Tổ trưởng</option>
+                                <option>Tổ phó</option>
+                                <option>Hiệu trưởng</option>
+                                <option>Phó hiệu trưởng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="degree">
+                                <option value="">Tất cả học vị</option>
+                                <option>Cử nhân</option>
+                                <option>Thạc sĩ</option>
+                                <option>Tiến sĩ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="status">
+                                <option value="">Tất cả trạng thái</option>
+                                <option>Đang công tác</option>
+                                <option>Đã nghỉ</option>
+                                <option>Tạm nghỉ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-1"></i> Lọc
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Teacher List Card -->
+            <div class="card teacher-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-users me-2"></i> Danh sách giảng viên
+                    </div>
+                    <div class="text-muted small">
+                        Tổng cộng: <span th:text="${teachers.size()}">0</span> giảng viên
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="scroll-table-area">
+                        <table class="table table-hover teacher-table">
+                            <thead class="fixed-header">
+                                <tr>
+                                    <th style="width: 60px;">Ảnh</th>
+                                    <th>Họ và tên</th>
+                                    <th>Chức danh</th>
+                                    <th>Học vị</th>
+                                    <th>Email</th>
+                                    <th>Mật khẩu</th>
+                                    <th>Khoa/Bộ môn</th>
+                                    <th>Trạng thái</th>
+                                    <th style="min-width: 120px;">Ngày tạo</th>
+                                    <th class="text-end" style="min-width: 140px;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="t : ${teachers}">
+                                    <td>
+                                        <img th:src="${t.avatar != null ? t.avatar : '/images/default-avatar.png'}"
+                                             th:alt="${t.fullName}" class="teacher-avatar">
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold" th:text="${t.fullName}"></div>
+                                        <div class="small text-muted" th:text="${t.username}"></div>
+                                    </td>
+                                    <td th:text="${t.position}"></td>
+                                    <td>
+                                        <span th:class="'badge ' + (${t.degree} == 'Tiến sĩ' ? 'badge-degree-ts' : (${t.degree} == 'Thạc sĩ' ? 'badge-degree' : 'badge-degree-cn'))"
+                                              th:text="${t.degree}"></span>
+                                    </td>
+                                    <td>
+                                        <a th:href="'mailto:' + ${t.email}" class="text-primary" th:text="${t.email}"></a>
+                                    </td>
+                                    <td style="word-break: break-all; white-space: normal;">
+                                        <span th:text="${t.password}"></span>
+                                    </td>                                
+                                    <td th:text="${t.department}"></td>
+                                    <td>
+                                        <span th:class="'badge badge-status ' + (${t.status} == 'Đang công tác' ? 'badge-active' : (${t.status} == 'Đã nghỉ' ? 'badge-leave' : 'badge-locked'))"
+                                              th:text="${t.status}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="small" th:text="${t.createdAt}"></span>
+                                    </td>
+                                    <td class="text-end action-btns">
+                                        <button type="button" class="btn btn-outline-primary btn-sm btn-view"
+                                            th:attr="data-fullname=${t.fullName},data-username=${t.username},data-email=${t.email},data-department=${t.department},data-position=${t.position},data-degree=${t.degree},data-status=${t.status},data-avatar=${t.avatar},data-createdat=${t.createdAt},data-password=${t.password}"
+                                            title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-edit"
+                                            th:attr="data-id=${t.id},data-fullname=${t.fullName},data-username=${t.username},data-email=${t.email},data-department=${t.department},data-position=${t.position},data-degree=${t.degree},data-status=${t.status},data-avatar=${t.avatar},data-password=${t.password}"
+                                            title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm btn-delete"
+                                            th:attr="data-id=${t.id},data-fullname=${t.fullName}"
+                                            title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Empty state -->
+                                <tr th:if="${#lists.isEmpty(teachers)}">
+                                    <td colspan="10" class="empty-state">
+                                        <i class="fas fa-user-slash"></i>
+                                        <h5 class="mt-2">Không có giảng viên nào</h5>
+                                        <p class="text-muted">Thêm giảng viên mới bằng cách nhấn nút "Thêm giảng viên"</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add Teacher Modal -->
+            <div class="modal fade" id="addTeacherModal" tabindex="-1" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <form th:action="@{/admin/dashboard/users/user-teacher-list/add}" method="post" class="modal-content">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addTeacherModalLabel">
+                                <i class="fas fa-user-plus me-2"></i> Thêm giảng viên mới
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                                    <input type="text" name="fullName" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+                                    <input type="text" name="username" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Khoa/Bộ môn <span class="text-danger">*</span></label>
+                                    <select name="department" class="form-select" required>
+                                        <option value="">Chọn tổ/bộ môn</option>
+                                        <option>Tổ Toán</option>
+                                        <option>Tổ Lý</option>
+                                        <option>Tổ Hóa</option>
+                                        <option>Tổ Văn</option>
+                                        <option>Tổ Anh</option>
+                                        <option>Tổ Sinh</option>
+                                        <option>Tổ Sử</option>
+                                        <option>Tổ Địa</option>
+                                        <option>Tổ Tin học</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Chức danh <span class="text-danger">*</span></label>
+                                    <select name="position" class="form-select" required>
+                                        <option value="">Chọn chức danh</option>
+                                        <option>Giáo viên</option>
+                                        <option>Tổ trưởng</option>
+                                        <option>Tổ phó</option>
+                                        <option>Hiệu trưởng</option>
+                                        <option>Phó hiệu trưởng</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Học vị <span class="text-danger">*</span></label>
+                                    <select name="degree" class="form-select" required>
+                                        <option value="">Chọn học vị</option>
+                                        <option>Cử nhân</option>
+                                        <option>Thạc sĩ</option>
+                                        <option>Tiến sĩ</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                                    <select name="status" class="form-select" required>
+                                        <option value="">Chọn trạng thái</option>
+                                        <option>Đang công tác</option>
+                                        <option>Đã nghỉ</option>
+                                        <option>Tạm nghỉ</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ảnh đại diện (URL)</label>
+                                <input type="url" name="avatar" class="form-control" placeholder="https://...">
+                                <div class="form-text">Để trống nếu sử dụng ảnh mặc định</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                                <input type="text" name="password" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i> Hủy bỏ
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Lưu thông tin
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Modal Xem chi tiết -->
+            <div class="modal fade" id="viewTeacherModal" tabindex="-1" aria-labelledby="viewTeacherModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" style="border-radius:16px;">
+                  <div class="modal-header bg-primary text-white" style="border-radius:16px 16px 0 0;">
+                    <h5 class="modal-title" id="viewTeacherModalLabel">
+                      <i class="fas fa-user-circle me-2"></i> Thông tin giảng viên
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                  </div>
+                  <div class="modal-body py-4 px-4">
+                    <div class="row align-items-center">
+                      <div class="col-md-3 text-center mb-3 mb-md-0">
+                        <img id="view-avatar" src="" alt="Avatar" class="rounded-circle shadow" style="width:100px;height:100px;object-fit:cover;border:4px solid #e3eaff;">
+                      </div>
+                      <div class="col-md-9">
+                        <div class="row g-2">
+                          <div class="col-6"><span class="fw-semibold"><i class="fas fa-user me-1"></i> Họ tên:</span> <span id="view-fullname"></span></div>
+                          <div class="col-6"><span class="fw-semibold"><i class="fas fa-user-tag me-1"></i> Tên đăng nhập:</span> <span id="view-username"></span></div>
+                          <div class="col-6"><span class="fw-semibold"><i class="fas fa-envelope me-1"></i> Email:</span> <span id="view-email"></span></div>
+                          <div class="col-6"><span class="fw-semibold"><i class="fas fa-building me-1"></i> Khoa/Bộ môn:</span> <span id="view-department"></span></div>
+                          <div class="col-6"><span class="fw-semibold"><i class="fas fa-briefcase me-1"></i> Chức danh:</span> <span id="view-position"></span></div>
+                          <div class="col-6"><span class="fw-semibold"><i class="fas fa-graduation-cap me-1"></i> Học vị:</span> <span id="view-degree"></span></div>
+                          <div class="col-6"><span class="fw-semibold"><i class="fas fa-toggle-on me-1"></i> Trạng thái:</span> <span id="view-status"></span></div>
+                          <div class="col-6"><span class="fw-semibold"><i class="fas fa-calendar-alt me-1"></i> Ngày tạo:</span> <span id="view-createdat"></span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Sửa -->
+            <div class="modal fade" id="editTeacherModal" tabindex="-1" aria-labelledby="editTeacherModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <form id="editTeacherForm" method="post" th:action="@{/admin/dashboard/users/user-teacher-list/edit}">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <div class="modal-content" style="border-radius:16px;">
+                    <div class="modal-header bg-info text-white" style="border-radius:16px 16px 0 0;">
+                      <h5 class="modal-title" id="editTeacherModalLabel">
+                        <i class="fas fa-edit me-2"></i> Sửa thông tin giảng viên
+                      </h5>
+                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body py-4 px-4">
+                      <input type="hidden" name="id" id="edit-id">
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Họ và tên</label>
+                          <input type="text" name="fullName" id="edit-fullname" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Tên đăng nhập</label>
+                          <input type="text" name="username" id="edit-username" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Email</label>
+                          <input type="email" name="email" id="edit-email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Khoa/Bộ môn</label>
+                          <select name="department" id="edit-department" class="form-select" required>
+                            <option value="">Chọn tổ/bộ môn</option>
                             <option>Tổ Toán</option>
                             <option>Tổ Lý</option>
                             <option>Tổ Hóa</option>
@@ -356,390 +653,106 @@
                             <option>Tổ Sử</option>
                             <option>Tổ Địa</option>
                             <option>Tổ Tin học</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-select" name="position">
-                            <option value="">Tất cả chức danh</option>
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label fw-semibold">Chức danh</label>
+                          <select name="position" id="edit-position" class="form-select" required>
+                            <option value="">Chọn chức danh</option>
                             <option>Giáo viên</option>
                             <option>Tổ trưởng</option>
                             <option>Tổ phó</option>
                             <option>Hiệu trưởng</option>
                             <option>Phó hiệu trưởng</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-select" name="degree">
-                            <option value="">Tất cả học vị</option>
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label fw-semibold">Học vị</label>
+                          <select name="degree" id="edit-degree" class="form-select" required>
+                            <option value="">Chọn học vị</option>
                             <option>Cử nhân</option>
                             <option>Thạc sĩ</option>
                             <option>Tiến sĩ</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-select" name="status">
-                            <option value="">Tất cả trạng thái</option>
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label fw-semibold">Trạng thái</label>
+                          <select name="status" id="edit-status" class="form-select" required>
+                            <option value="">Chọn trạng thái</option>
                             <option>Đang công tác</option>
                             <option>Đã nghỉ</option>
                             <option>Tạm nghỉ</option>
-                        </select>
+                          </select>
+                        </div>
+                        <div class="col-md-12">
+                          <label class="form-label fw-semibold">Ảnh đại diện (URL)</label>
+                          <input type="url" name="avatar" id="edit-avatar" class="form-control">
+                        </div>
+                        <div class="col-md-12">
+                          <label class="form-label fw-semibold">Mật khẩu</label>
+                          <input type="text" name="password" id="edit-password" class="form-control" required>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-md-1">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter me-1"></i> Lọc
-                        </button>
+                    <div class="modal-footer bg-light" style="border-radius:0 0 16px 16px;">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Hủy
+                      </button>
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Lưu thay đổi
+                      </button>
                     </div>
+                  </div>
                 </form>
+              </div>
             </div>
-        </div>
-        
-        <!-- Teacher List Card -->
-        <div class="card teacher-card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <i class="fas fa-users me-2"></i> Danh sách giảng viên
-                </div>
-                <div class="text-muted small">
-                    Tổng cộng: <span th:text="${teachers.size()}">0</span> giảng viên
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="scroll-table-area">
-                    <table class="table table-hover teacher-table">
-                        <thead class="fixed-header">
-                            <tr>
-                                <th style="width: 60px;">Ảnh</th>
-                                <th>Họ và tên</th>
-                                <th>Chức danh</th>
-                                <th>Học vị</th>
-                                <th>Email</th>
-                                <th>Mật khẩu</th>
-                                <th>Khoa/Bộ môn</th>
-                                <th>Trạng thái</th>
-                                <th style="min-width: 120px;">Ngày tạo</th>
-                                <th class="text-end" style="min-width: 140px;">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="t : ${teachers}">
-                                <td>
-                                    <img th:src="${t.avatar != null ? t.avatar : '/images/default-avatar.png'}"
-                                         th:alt="${t.fullName}" class="teacher-avatar">
-                                </td>
-                                <td>
-                                    <div class="fw-semibold" th:text="${t.fullName}"></div>
-                                    <div class="small text-muted" th:text="${t.username}"></div>
-                                </td>
-                                <td th:text="${t.position}"></td>
-                                <td>
-                                    <span th:class="'badge ' + (${t.degree} == 'Tiến sĩ' ? 'badge-degree-ts' : (${t.degree} == 'Thạc sĩ' ? 'badge-degree' : 'badge-degree-cn'))"
-                                          th:text="${t.degree}"></span>
-                                </td>
-                                <td>
-                                    <a th:href="'mailto:' + ${t.email}" class="text-primary" th:text="${t.email}"></a>
-                                </td>
-                                <td style="word-break: break-all; white-space: normal;">
-                                    <span th:text="${t.password}"></span>
-                                </td>                                
-                                <td th:text="${t.department}"></td>
-                                <td>
-                                    <span th:class="'badge badge-status ' + (${t.status} == 'Đang công tác' ? 'badge-active' : (${t.status} == 'Đã nghỉ' ? 'badge-leave' : 'badge-locked'))"
-                                          th:text="${t.status}"></span>
-                                </td>
-                                <td>
-                                    <span class="small" th:text="${t.createdAt}"></span>
-                                </td>
-                                <td class="text-end action-btns">
-                                    <button type="button" class="btn btn-outline-primary btn-sm btn-view"
-                                        th:attr="data-fullname=${t.fullName},data-username=${t.username},data-email=${t.email},data-department=${t.department},data-position=${t.position},data-degree=${t.degree},data-status=${t.status},data-avatar=${t.avatar},data-createdat=${t.createdAt},data-password=${t.password}"
-                                        title="Xem chi tiết">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm btn-edit"
-                                        th:attr="data-id=${t.id},data-fullname=${t.fullName},data-username=${t.username},data-email=${t.email},data-department=${t.department},data-position=${t.position},data-degree=${t.degree},data-status=${t.status},data-avatar=${t.avatar},data-password=${t.password}"
-                                        title="Chỉnh sửa">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete"
-                                        th:attr="data-id=${t.id},data-fullname=${t.fullName}"
-                                        title="Xóa">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            
-                            <!-- Empty state -->
-                            <tr th:if="${#lists.isEmpty(teachers)}">
-                                <td colspan="10" class="empty-state">
-                                    <i class="fas fa-user-slash"></i>
-                                    <h5 class="mt-2">Không có giảng viên nào</h5>
-                                    <p class="text-muted">Thêm giảng viên mới bằng cách nhấn nút "Thêm giảng viên"</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Add Teacher Modal -->
-        <div class="modal fade" id="addTeacherModal" tabindex="-1" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <form th:action="@{/admin/dashboard/users/user-teacher-list/add}" method="post" class="modal-content">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addTeacherModalLabel">
-                            <i class="fas fa-user-plus me-2"></i> Thêm giảng viên mới
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+
+            <!-- Modal Xóa -->
+            <div class="modal fade" id="deleteTeacherModal" tabindex="-1" aria-labelledby="deleteTeacherModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <form id="deleteTeacherForm" method="post" th:action="@{/admin/dashboard/users/user-teacher-list/delete}">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <div class="modal-content" style="border-radius:16px;">
+                    <div class="modal-header bg-danger text-white" style="border-radius:16px 16px 0 0;">
+                      <h5 class="modal-title" id="deleteTeacherModalLabel">
+                        <i class="fas fa-trash me-2"></i> Xác nhận xóa
+                      </h5>
+                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
                     </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                                <input type="text" name="fullName" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
-                                <input type="text" name="username" class="form-control" required>
-                            </div>
+                    <div class="modal-body py-4 px-4">
+                      <input type="hidden" name="id" id="delete-id">
+                      <div class="d-flex align-items-center">
+                        <div class="me-3 text-danger" style="font-size:2rem;">
+                          <i class="fas fa-exclamation-triangle"></i>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Khoa/Bộ môn <span class="text-danger">*</span></label>
-                                <select name="department" class="form-select" required>
-                                    <option value="">Chọn tổ/bộ môn</option>
-                                    <option>Tổ Toán</option>
-                                    <option>Tổ Lý</option>
-                                    <option>Tổ Hóa</option>
-                                    <option>Tổ Văn</option>
-                                    <option>Tổ Anh</option>
-                                    <option>Tổ Sinh</option>
-                                    <option>Tổ Sử</option>
-                                    <option>Tổ Địa</option>
-                                    <option>Tổ Tin học</option>
-                                </select>
-                            </div>
+                        <div>
+                          <p class="mb-1">Bạn có chắc chắn muốn xóa giảng viên <strong id="delete-fullname"></strong>?</p>
+                          <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
                         </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Chức danh <span class="text-danger">*</span></label>
-                                <select name="position" class="form-select" required>
-                                    <option value="">Chọn chức danh</option>
-                                    <option>Giáo viên</option>
-                                    <option>Tổ trưởng</option>
-                                    <option>Tổ phó</option>
-                                    <option>Hiệu trưởng</option>
-                                    <option>Phó hiệu trưởng</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Học vị <span class="text-danger">*</span></label>
-                                <select name="degree" class="form-select" required>
-                                    <option value="">Chọn học vị</option>
-                                    <option>Cử nhân</option>
-                                    <option>Thạc sĩ</option>
-                                    <option>Tiến sĩ</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
-                                <select name="status" class="form-select" required>
-                                    <option value="">Chọn trạng thái</option>
-                                    <option>Đang công tác</option>
-                                    <option>Đã nghỉ</option>
-                                    <option>Tạm nghỉ</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Ảnh đại diện (URL)</label>
-                            <input type="url" name="avatar" class="form-control" placeholder="https://...">
-                            <div class="form-text">Để trống nếu sử dụng ảnh mặc định</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
-                            <input type="text" name="password" class="form-control" required>
-                        </div>
+                      </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times me-2"></i> Hủy bỏ
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i> Lưu thông tin
-                        </button>
+                    <div class="modal-footer bg-light" style="border-radius:0 0 16px 16px;">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Hủy
+                      </button>
+                      <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i> Xác nhận xóa
+                      </button>
                     </div>
+                  </div>
                 </form>
-            </div>
-        </div>
-        
-        <!-- Modal Xem chi tiết -->
-        <div class="modal fade" id="viewTeacherModal" tabindex="-1" aria-labelledby="viewTeacherModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content" style="border-radius:16px;">
-              <div class="modal-header bg-primary text-white" style="border-radius:16px 16px 0 0;">
-                <h5 class="modal-title" id="viewTeacherModalLabel">
-                  <i class="fas fa-user-circle me-2"></i> Thông tin giảng viên
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
-              </div>
-              <div class="modal-body py-4 px-4">
-                <div class="row align-items-center">
-                  <div class="col-md-3 text-center mb-3 mb-md-0">
-                    <img id="view-avatar" src="" alt="Avatar" class="rounded-circle shadow" style="width:100px;height:100px;object-fit:cover;border:4px solid #e3eaff;">
-                  </div>
-                  <div class="col-md-9">
-                    <div class="row g-2">
-                      <div class="col-6"><span class="fw-semibold"><i class="fas fa-user me-1"></i> Họ tên:</span> <span id="view-fullname"></span></div>
-                      <div class="col-6"><span class="fw-semibold"><i class="fas fa-user-tag me-1"></i> Tên đăng nhập:</span> <span id="view-username"></span></div>
-                      <div class="col-6"><span class="fw-semibold"><i class="fas fa-envelope me-1"></i> Email:</span> <span id="view-email"></span></div>
-                      <div class="col-6"><span class="fw-semibold"><i class="fas fa-building me-1"></i> Khoa/Bộ môn:</span> <span id="view-department"></span></div>
-                      <div class="col-6"><span class="fw-semibold"><i class="fas fa-briefcase me-1"></i> Chức danh:</span> <span id="view-position"></span></div>
-                      <div class="col-6"><span class="fw-semibold"><i class="fas fa-graduation-cap me-1"></i> Học vị:</span> <span id="view-degree"></span></div>
-                      <div class="col-6"><span class="fw-semibold"><i class="fas fa-toggle-on me-1"></i> Trạng thái:</span> <span id="view-status"></span></div>
-                      <div class="col-6"><span class="fw-semibold"><i class="fas fa-calendar-alt me-1"></i> Ngày tạo:</span> <span id="view-createdat"></span></div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Modal Sửa -->
-        <div class="modal fade" id="editTeacherModal" tabindex="-1" aria-labelledby="editTeacherModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-lg modal-dialog-centered">
-            <form id="editTeacherForm" method="post" th:action="@{/admin/dashboard/users/user-teacher-list/edit}">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-              <div class="modal-content" style="border-radius:16px;">
-                <div class="modal-header bg-info text-white" style="border-radius:16px 16px 0 0;">
-                  <h5 class="modal-title" id="editTeacherModalLabel">
-                    <i class="fas fa-edit me-2"></i> Sửa thông tin giảng viên
-                  </h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body py-4 px-4">
-                  <input type="hidden" name="id" id="edit-id">
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold">Họ và tên</label>
-                      <input type="text" name="fullName" id="edit-fullname" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold">Tên đăng nhập</label>
-                      <input type="text" name="username" id="edit-username" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold">Email</label>
-                      <input type="email" name="email" id="edit-email" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold">Khoa/Bộ môn</label>
-                      <select name="department" id="edit-department" class="form-select" required>
-                        <option value="">Chọn tổ/bộ môn</option>
-                        <option>Tổ Toán</option>
-                        <option>Tổ Lý</option>
-                        <option>Tổ Hóa</option>
-                        <option>Tổ Văn</option>
-                        <option>Tổ Anh</option>
-                        <option>Tổ Sinh</option>
-                        <option>Tổ Sử</option>
-                        <option>Tổ Địa</option>
-                        <option>Tổ Tin học</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-semibold">Chức danh</label>
-                      <select name="position" id="edit-position" class="form-select" required>
-                        <option value="">Chọn chức danh</option>
-                        <option>Giáo viên</option>
-                        <option>Tổ trưởng</option>
-                        <option>Tổ phó</option>
-                        <option>Hiệu trưởng</option>
-                        <option>Phó hiệu trưởng</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-semibold">Học vị</label>
-                      <select name="degree" id="edit-degree" class="form-select" required>
-                        <option value="">Chọn học vị</option>
-                        <option>Cử nhân</option>
-                        <option>Thạc sĩ</option>
-                        <option>Tiến sĩ</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-semibold">Trạng thái</label>
-                      <select name="status" id="edit-status" class="form-select" required>
-                        <option value="">Chọn trạng thái</option>
-                        <option>Đang công tác</option>
-                        <option>Đã nghỉ</option>
-                        <option>Tạm nghỉ</option>
-                      </select>
-                    </div>
-                    <div class="col-md-12">
-                      <label class="form-label fw-semibold">Ảnh đại diện (URL)</label>
-                      <input type="url" name="avatar" id="edit-avatar" class="form-control">
-                    </div>
-                    <div class="col-md-12">
-                      <label class="form-label fw-semibold">Mật khẩu</label>
-                      <input type="text" name="password" id="edit-password" class="form-control" required>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer bg-light" style="border-radius:0 0 16px 16px;">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> Hủy
-                  </button>
-                  <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i> Lưu thay đổi
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Modal Xóa -->
-        <div class="modal fade" id="deleteTeacherModal" tabindex="-1" aria-labelledby="deleteTeacherModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <form id="deleteTeacherForm" method="post" th:action="@{/admin/dashboard/users/user-teacher-list/delete}">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-              <div class="modal-content" style="border-radius:16px;">
-                <div class="modal-header bg-danger text-white" style="border-radius:16px 16px 0 0;">
-                  <h5 class="modal-title" id="deleteTeacherModalLabel">
-                    <i class="fas fa-trash me-2"></i> Xác nhận xóa
-                  </h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body py-4 px-4">
-                  <input type="hidden" name="id" id="delete-id">
-                  <div class="d-flex align-items-center">
-                    <div class="me-3 text-danger" style="font-size:2rem;">
-                      <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div>
-                      <p class="mb-1">Bạn có chắc chắn muốn xóa giảng viên <strong id="delete-fullname"></strong>?</p>
-                      <p class="mb-0 text-muted small">Hành động này không thể hoàn tác.</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer bg-light" style="border-radius:0 0 16px 16px;">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> Hủy
-                  </button>
-                  <button type="submit" class="btn btn-danger">
-                    <i class="fas fa-trash me-1"></i> Xác nhận xóa
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
+            <!-- Navigation Links (Example) -->
+            <div class="mb-3">
+                <a href="/admin/dashboard/users/user-student-list" target="mainFrame" onclick="event.preventDefault(); window.location.hash='user-student-list';" class="btn btn-outline-primary mb-2">
+                    <i class="fas fa-user-graduate"></i> Học Sinh
+                </a>
+                <a href="/admin/dashboard/users/admin" target="mainFrame" onclick="event.preventDefault(); window.location.hash='user-admin-list';" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-user-shield"></i> Quản trị viên / Nhân viên
+                </a>
+            </div>
         </div>
     </div>
     

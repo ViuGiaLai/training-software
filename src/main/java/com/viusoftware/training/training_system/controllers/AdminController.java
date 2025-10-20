@@ -16,6 +16,10 @@ import org.springframework.http.MediaType;
 import com.viusoftware.training.training_system.entity.UsersAdmin;
 import java.security.Principal;
 import org.springframework.security.core.Authentication;
+import com.viusoftware.training.training_system.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+import com.viusoftware.training.training_system.entity.ExamSchedule;
 
 @Controller
 @RequestMapping("/admin")
@@ -30,17 +34,191 @@ public class AdminController {
         this.fileStorageService = fileStorageService;
     }
 
+    @Autowired
+    private UsersStudentsRepository usersStudentsRepository;
+    @Autowired
+    private UsersTeachersRepository usersTeachersRepository;
+    @Autowired
+    private UsersAdminRepository usersAdminRepository;
+    @Autowired
+    private CourseRepository courseRepository;
+    @Autowired
+    private ClassRoomRepository classRoomRepository;
+    @Autowired
+    private ExamManagementRepository examManagementRepository;
+    @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private PeriodRepository periodRepository;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+
     @GetMapping("/dashboard")
     public String showAdminDashboard(Model model, Principal principal) {
         String username = principal.getName();
         UsersAdmin currentUser = userService.findAdminByUsername(username);
         model.addAttribute("currentUser", currentUser);
-        return "dashboard/admin"; // Corresponds to templates/dashboard/admin.html
+        return "dashboard/admin"; // Đây là layout tổng thể (admin.html)
     }
 
-    @GetMapping("/dashboard/dashboard")
-    public String showDashboardContent() {
-        return "dashboard/dashboard"; // Corresponds to templates/dashboard/dashboard.html
+    // Các fragment trả về nội dung động, layout tổng thể là admin.html
+    @GetMapping("/dashboard/dashboard/fragment")
+    public String dashboardFragment(Model model) {
+        // Nếu có thống kê, truyền vào model ở đây
+        // model.addAttribute("studentCount", ...);
+        // model.addAttribute("teacherCount", ...);
+        // model.addAttribute("courseCount", ...);
+        // model.addAttribute("classCount", ...);
+        return "dashboard/dashboard :: content";
+    }
+
+    @GetMapping("/dashboard/users/user-student-list/fragment")
+    public String userStudentListFragment(Model model) {
+        model.addAttribute("students", usersStudentsRepository.findAll());
+        model.addAttribute("classrooms", classRoomRepository.findAll());
+        model.addAttribute("courses", classRoomRepository.findDistinctAcademicYears());
+        // Sửa dòng dưới nếu repository không có findDistinctStatuses()
+        // model.addAttribute("statuses", usersStudentsRepository.findDistinctStatuses());
+        // Nếu không có method, dùng cứng:
+        model.addAttribute("statuses", java.util.List.of("Đang học", "Đã tốt nghiệp", "Bảo lưu", "Bị đình chỉ"));
+        // Nếu có filter, truyền selectedClassroom, selectedCourse, selectedStatus
+        return "dashboard/users/user-student-list :: content";
+    }
+
+    @GetMapping("/dashboard/users/user-teacher-list/fragment")
+    public String userTeacherListFragment(Model model) {
+        model.addAttribute("teachers", usersTeachersRepository.findAll());
+        return "dashboard/users/user-teacher-list :: content";
+    }
+
+    @GetMapping("/dashboard/user-list/fragment")
+    public String userListFragment(Model model) {
+        model.addAttribute("students", usersStudentsRepository.findAll());
+        model.addAttribute("teachers", usersTeachersRepository.findAll());
+        model.addAttribute("admins", usersAdminRepository.findAll());
+        return "dashboard/users/user-list :: content";
+    }
+
+    @GetMapping("/dashboard/course-management/fragment")
+    public String courseManagementFragment(Model model) {
+        model.addAttribute("courses", courseRepository.findAll());
+        model.addAttribute("classRooms", classRoomRepository.findAll());
+        model.addAttribute("teachers", usersTeachersRepository.findAll());
+        return "dashboard/course-management :: content";
+    }
+
+    @GetMapping("/dashboard/exam-management/fragment")
+    public String examManagementFragment(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String subjectFilter,
+        @RequestParam(required = false) String classFilter,
+        @RequestParam(required = false) String roomFilter,
+        Model model) {
+        // Lọc dữ liệu nếu có filter, nếu không thì lấy tất cả
+        List<ExamSchedule> examSchedules;
+        if (search != null && !search.isBlank()) {
+            examSchedules = examManagementRepository.findBySubjectContaining(search);
+        } else if (subjectFilter != null && !subjectFilter.isBlank()) {
+            examSchedules = examManagementRepository.findBySubjectContaining(subjectFilter);
+        } else if (classFilter != null && !classFilter.isBlank()) {
+            examSchedules = examManagementRepository.findByClassesContaining(classFilter);
+        } else if (roomFilter != null && !roomFilter.isBlank()) {
+            // Nếu cần filter theo phòng, hãy thêm method vào repository
+            examSchedules = examManagementRepository.findAll().stream()
+                .filter(e -> e.getRooms() != null && e.getRooms().contains(roomFilter))
+                .toList();
+        } else {
+            examSchedules = examManagementRepository.findAll();
+        }
+
+        model.addAttribute("examSchedules", examSchedules);
+        model.addAttribute("totalExams", examSchedules.size());
+        model.addAttribute("classRooms", classRoomRepository.findAll());
+        model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("subjects", subjectRepository.findAll());
+        model.addAttribute("subjectFilter", subjectFilter);
+        model.addAttribute("classFilter", classFilter);
+        model.addAttribute("roomFilter", roomFilter);
+        model.addAttribute("search", search);
+        return "dashboard/exam-management :: content";
+    }
+
+    @GetMapping("/dashboard/schedule-management/fragment")
+    public String scheduleManagementFragment(
+        @RequestParam(required = false) Long classId,
+        @RequestParam(required = false) String weekStart,
+        Model model) {
+        java.util.List classes = classRoomRepository.findAll();
+        java.util.List subjects = subjectRepository.findAll();
+        java.util.List teachers = usersTeachersRepository.findAll();
+        java.util.List rooms = roomRepository.findAll();
+        java.util.List periods = periodRepository.findAll();
+
+        model.addAttribute("classes", classes != null ? classes : java.util.Collections.emptyList());
+        model.addAttribute("subjects", subjects != null ? subjects : java.util.Collections.emptyList());
+        model.addAttribute("teachers", teachers != null ? teachers : java.util.Collections.emptyList());
+        model.addAttribute("rooms", rooms != null ? rooms : java.util.Collections.emptyList());
+        model.addAttribute("periods", periods != null ? periods : java.util.Collections.emptyList());
+        model.addAttribute("selectedSubjectId", null);
+
+        java.time.LocalDate startDate;
+        if (weekStart != null && !weekStart.isBlank()) {
+            startDate = java.time.LocalDate.parse(weekStart);
+        } else {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            startDate = today.with(java.time.DayOfWeek.MONDAY);
+        }
+        java.time.LocalDate endDate = startDate.plusDays(6);
+        model.addAttribute("weekStart", startDate);
+        model.addAttribute("weekEnd", endDate);
+
+        java.util.List schedules = (classId != null)
+                ? scheduleRepository.findByClassRoomIdAndDateBetween(classId, startDate, endDate)
+                : java.util.Collections.emptyList();
+        model.addAttribute("selectedClassId", classId);
+        model.addAttribute("schedules", schedules);
+
+        return "dashboard/schedule-management :: content";
+    }
+
+    @GetMapping("/dashboard/classroom/fragment")
+    public String classroomFragment(
+        @RequestParam(required = false) String grade,
+        @RequestParam(required = false) String academicYear,
+        @RequestParam(required = false) Long teacherId,
+        Model model) {
+        java.util.List classRooms = classRoomRepository.findAllWithStudents();
+        java.util.Map<Long, java.util.List> sortedStudentsMap = new java.util.HashMap<>();
+        for (Object cl : classRooms) {
+            Long id = ((com.viusoftware.training.training_system.entity.ClassRoom) cl).getId();
+            sortedStudentsMap.put(id, classRoomRepository.findStudentsByClassRoomOrderByFullName(id));
+        }
+        java.util.List grades = classRoomRepository.findDistinctGrades();
+        java.util.List academicYears = classRoomRepository.findDistinctAcademicYears();
+        java.util.List teachers = usersTeachersRepository.findAll();
+
+        model.addAttribute("classRooms", classRooms);
+        model.addAttribute("sortedStudentsMap", sortedStudentsMap);
+        model.addAttribute("grades", grades);
+        model.addAttribute("academicYears", academicYears);
+        model.addAttribute("teachers", teachers);
+        model.addAttribute("selectedGrade", grade);
+        model.addAttribute("selectedYear", academicYear);
+        model.addAttribute("selectedTeacherId", teacherId);
+
+        return "dashboard/classroom :: content";
+    }
+
+    @GetMapping("/dashboard/class-assignment/fragment")
+    public String classAssignmentFragment(Model model) {
+        model.addAttribute("teachers", usersTeachersRepository.findAll());
+        model.addAttribute("classRooms", classRoomRepository.findAll());
+        // Nếu có bảng assignment, truyền assignments
+        // model.addAttribute("assignments", assignmentRepository.findAll());
+        model.addAttribute("grades", classRoomRepository.findDistinctGrades());
+        return "dashboard/class-assignment :: content";
     }
 
     @GetMapping("/create-user")
@@ -146,4 +324,4 @@ public class AdminController {
     }
 
     // You might want to add more admin related endpoints here (e.g., view users, edit users, delete users)
-} 
+}

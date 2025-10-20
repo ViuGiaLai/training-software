@@ -84,72 +84,62 @@
 
     <!-- Nội dung động -->
     <main style="min-height:80vh;">
-        <iframe id="mainFrame" name="mainFrame"
-            th:src="${iframePath != null} ? ${iframePath} : '/sv/thoi-khoa-bieu'"
-            src="/sv/thoi-khoa-bieu"
-            style="width:100%;min-height:80vh;border:none;"></iframe>
+        <div id="mainContent"></div>
     </main>
 
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Lấy iframePath từ query string (nếu có)
-        function getIframePathFromQuery() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('iframePath');
-        }
-        // Nếu có iframePath trên URL, load vào iframe
-        const iframePath = getIframePathFromQuery();
-        if (iframePath) {
-            document.getElementById('mainFrame').src = iframePath;
-            // Xóa query string khỏi URL sau khi load (tùy chọn)
-            history.replaceState({}, '', window.location.pathname);
-        }
-
-        // Map menu path to nội dung
+        // Map menu path to fragment endpoint
         const menuMap = {
-            '/sv/thoi-khoa-bieu': '/sv/thoi-khoa-bieu',
-            '/sv/lich-thi': '/sv/lich-thi',
-            '/sv/danh-sach-lop': '/sv/danh-sach-lop',
-            '/sv/thong-tin-sinhvien': '/sv/thong-tin-ca-nhan',
-            //   '/sv/thong-bao': '/sv/thong-bao',
-            // '/sv/thoi-khoa-bieu': '/sv/thoi-khoa-bieu',
-            // '/sv/lich-thi': '/sv/lich-thi',
-            // '/sv/danh-sach-lop': '/sv/danh-sach-lop',
-            '/sv/danh-gia-lop-hoc': '/sv/danh-gia-lop-hoc',
-            '/sv/ket-qua-hoc-tap': '/sv/ket-qua-hoc-tap',
-            '/sv/lich-hoc': '/sv/lich-hoc',
-            '/sv/diem-so': '/sv/diem-so',
-            '/sv/hoc-phi': '/sv/hoc-phi',
-            '/sv/cai-dat': '/sv/cai-dat',
-            '/sv/doi-mat-khau': '/sv/doi-mat-khau'
+            '/sv/thoi-khoa-bieu': '/sv/thoi-khoa-bieu/fragment',
+            '/sv/lich-thi': '/sv/lich-thi/fragment',
+            '/sv/danh-sach-lop': '/sv/danh-sach-lop/fragment',
+            '/sv/thong-tin-ca-nhan': '/sv/thong-tin-ca-nhan/fragment',
+            '/sv/danh-gia-lop-hoc': '/sv/danh-gia-lop-hoc/fragment',
+            '/sv/ket-qua-hoc-tap': '/sv/ket-qua-hoc-tap/fragment',
+            '/sv/lich-hoc': '/sv/lich-hoc/fragment',
+            '/sv/diem-so': '/sv/diem-so/fragment',
+            '/sv/hoc-phi': '/sv/hoc-phi/fragment',
+            '/sv/cai-dat': '/sv/cai-dat/fragment',
+            '/sv/doi-mat-khau': '/sv/doi-mat-khau/fragment'
         };
 
-        // Khi click menu, load vào iframe và đổi URL
+        // Hàm load fragment vào mainContent
+        function loadFragment(path) {
+            const url = menuMap[path] || menuMap['/sv/thoi-khoa-bieu'];
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    // Lấy fragment content
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+                    let content = doc.querySelector('[data-fragment="content"]');
+                    document.getElementById('mainContent').innerHTML = content ? content.outerHTML : html;
+                });
+        }
+
+        // Khi click menu, load fragment
         document.querySelectorAll('.student-menu__item .dropdown-item, .student-menu__item .nav-link').forEach(function(link) {
             link.addEventListener('click', function(e) {
                 var href = link.getAttribute('href');
                 if (href && href.startsWith('/sv/')) {
                     e.preventDefault();
-                    document.getElementById('mainFrame').src = href;
-                    history.pushState({iframe: href}, '', href);
+                    loadFragment(href);
+                    history.pushState({fragment: href}, '', href);
                 }
             });
         });
 
-        // Khi bấm back/forward hoặc load lại, tự động load đúng nội dung vào iframe
+        // Khi bấm back/forward
         window.addEventListener('popstate', function(event) {
             var path = window.location.pathname;
-            if (menuMap[path]) {
-                document.getElementById('mainFrame').src = menuMap[path];
-            }
+            loadFragment(path);
         });
 
-        // Khi load trang, nếu không phải /sv/student thì load đúng nội dung
+        // Khi load trang lần đầu
         document.addEventListener('DOMContentLoaded', function() {
             var path = window.location.pathname;
-            if (menuMap[path]) {
-                document.getElementById('mainFrame').src = menuMap[path];
-            }
+            loadFragment(menuMap[path] ? path : '/sv/thoi-khoa-bieu');
         });
     </script>
 </body>

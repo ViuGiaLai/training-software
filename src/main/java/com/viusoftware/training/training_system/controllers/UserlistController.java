@@ -8,4 +8,9 @@ public class UserlistController {
     public String userList() {
         return "dashboard/users/user-list";
     }
+
+//     @GetMapping("/admin/dashboard/user-list/fragment")
+//     public String userListFragment() {
+//         return "dashboard/users/user-list :: content";
+//     }
 }

@@ -95,6 +95,8 @@
     </style>
 </head>
 <body>
+<!-- Phần nội dung động sẽ được load vào <div id="mainContent"></div> -->
+<div data-fragment="content" th:fragment="content">
     <div class="assignment-header d-flex justify-content-between align-items-center">
         <h1>Phân công lớp học</h1>
         <button onclick="saveAssignments()" class="btn btn-primary">
@@ -289,5 +291,6 @@
             renderClassList();
         });
     </script>
+</div>
 </body>
 </html>

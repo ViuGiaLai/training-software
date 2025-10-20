@@ -160,9 +160,9 @@
             </ul>
         </aside>
 
-        <!-- Main Content - Cập nhật icon -->
+        <!-- Main Content - Dùng fragment động thay vì iframe -->
         <main class="admin-main">
-            <iframe id="mainFrame" name="mainFrame" src="/admin/dashboard/dashboard" style="width:100%;height:calc(100vh - 80px);border:none;background:#f5f7fa;"></iframe>
+            <div id="mainContent"></div>
         </main>
     </div>
 
@@ -187,203 +187,75 @@
             }
         }
 
-        // Map hash/page to iframe src
+        // Map page key to fragment endpoint
         var pageMap = {
-            'user-list': '/admin/dashboard/user-list',
-            'user-add': '/admin/dashboard/user-add',
-            'user-edit': '/admin/dashboard/user-edit',
-            'user-role': '/admin/dashboard/user-role',
-            'group-role': '/admin/dashboard/group-role',
-            'course-management': '/admin/dashboard/course-management',
-            'schedule-management': '/admin/dashboard/schedule-management',
-            'classroom': '/admin/dashboard/classroom',
-            'course-register': '/admin/dashboard/course-register',
-            'teacher-management': '/admin/dashboard/teacher-management',
-            'class-assignment': '/admin/dashboard/class-assignment',
-            'student-management': '/admin/dashboard/student-management',
-            'user-report': '/admin/dashboard/user-report',
-            'course-report': '/admin/dashboard/course-report',
-            'activity-stat': '/admin/dashboard/activity-stat',
-            'export-report': '/admin/dashboard/export-report',
-            'system-config': '/admin/dashboard/system-config',
-            'backup-restore': '/admin/dashboard/backup-restore',
-            'system-logs': '/admin/dashboard/system-logs',
-            'general-settings': '/admin/dashboard/general-settings'
+            'dashboard': '/admin/dashboard/dashboard/fragment',
+            'user-list': '/admin/dashboard/user-list/fragment',
+            'user-student-list': '/admin/dashboard/users/user-student-list/fragment',
+            'user-teacher-list': '/admin/dashboard/users/user-teacher-list/fragment',
+            'course-management': '/admin/dashboard/course-management/fragment',
+            'exam-management': '/admin/dashboard/exam-management/fragment',
+            'schedule-management': '/admin/dashboard/schedule-management/fragment',
+            'classroom': '/admin/dashboard/classroom/fragment',
+            'class-assignment': '/admin/dashboard/class-assignment/fragment'
+            // ...bổ sung các key khác nếu có...
         };
 
-        // Khi click menu, chỉ đổi màu, không reload, không lag
+        // Lấy key từ href
+        function getPageKeyFromHref(href) {
+            // Ví dụ: /admin/dashboard/course-management -> course-management
+            var parts = href.split('/');
+            var last = parts[parts.length - 1];
+            // Nếu là fragment thì lấy phần trước đó
+            if (last === 'fragment') return parts[parts.length - 2];
+            return last || 'dashboard';
+        }
+
+        // Load fragment vào mainContent
+        function loadFragment(pageKey) {
+            var url = pageMap[pageKey] || pageMap['dashboard'];
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, "text/html");
+                    var content = doc.querySelector('[data-fragment="content"]');
+                    document.getElementById('mainContent').innerHTML = content ? content.outerHTML : html;
+                });
+        }
+
+        // Khi click menu, load fragment và đổi hash, KHÔNG chuyển trang
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('a[target="mainFrame"]').forEach(function(link) {
                 link.addEventListener('click', function(e) {
                     var href = link.getAttribute('href');
-                    for (var key in pageMap) {
-                        if (pageMap[key] === href) {
-                            window.location.hash = key;
-                            document.getElementById('mainFrame').src = href;
-                            // Không thực hiện bất kỳ hiệu ứng nào, chỉ đổi màu
-                            e.preventDefault();
-                            break;
-                        }
-                    }
+                    var pageKey = getPageKeyFromHref(href);
+                    window.location.hash = pageKey;
+                    loadFragment(pageKey);
+                    e.preventDefault();
+                    return false;
                 });
             });
 
-            // Khi load trang, nếu có hash thì load đúng src
+            // Khi load trang, nếu có hash thì load đúng fragment
             function loadFromHash() {
                 var hash = window.location.hash;
-                if (hash) {
-                    var page = hash.replace('#', '');
-                    if (pageMap[page]) {
-                        document.getElementById('mainFrame').src = pageMap[page];
-                    }
-                }
+                var pageKey = hash ? hash.replace('#', '') : 'dashboard';
+                loadFragment(pageKey);
             }
             loadFromHash();
 
-            // Khi hash thay đổi (bấm back/forward), cập nhật iframe
+            // Khi hash thay đổi (bấm back/forward), cập nhật fragment
             window.addEventListener('hashchange', loadFromHash);
-        });
 
-        // Highlight sidebar item when iframe src changes
-        function setActiveSidebar(page) {
-            // Xóa active cũ
-            document.querySelectorAll('.sidebar-menu .submenu li a, .dashboard a').forEach(function(link) {
-                link.classList.remove('active');
-            });
-            // Đặt active cho Dashboard nếu là dashboard
-            if (page === 'dashboard') {
-                var dashLink = document.getElementById('dashboard-link');
-                if (dashLink) dashLink.classList.add('active');
-            } else if (page) {
-                var selector = '.sidebar-menu .submenu li a[href$="' + page + '"]';
-                var activeLink = document.querySelector(selector);
-                if (activeLink) {
-                    activeLink.classList.add('active');
-                }
+            // Nếu truy cập trực tiếp vào các trang con (không có hash), tự động chuyển về layout tổng thể và load fragment
+            var path = window.location.pathname;
+            var match = path.match(/\/admin\/dashboard\/([a-zA-Z0-9\-]+)$/);
+            if (match && !window.location.hash) {
+                var pageKey = match[1];
+                window.location.hash = pageKey;
+                loadFragment(pageKey);
             }
-        }
-
-        // Khi click menu, cập nhật active
-        document.querySelectorAll('a[target="mainFrame"]').forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                var href = link.getAttribute('href');
-                var page = href.split('/').pop();
-                setActiveSidebar(page);
-            });
-        });
-
-        // When iframe content loads, check for CSRF token in forms
-        document.getElementById('mainFrame').addEventListener('load', function() {
-            try {
-                var iframeDocument = document.getElementById('mainFrame').contentDocument || document.getElementById('mainFrame').contentWindow.document;
-                var forms = iframeDocument.querySelectorAll('form');
-                console.log(`Checking ${forms.length} forms in iframe for CSRF token:`);
-                forms.forEach((form, index) => {
-                    var csrfInput = form.querySelector('input[name="_csrf"]');
-                    if (csrfInput) {
-                        console.log(`Form ${index} (${form.method} ${form.action}): CSRF token input found.`);
-                    } else {
-                        console.log(`Form ${index} (${form.method} ${form.action}): CSRF token input NOT found.`);
-                    }
-                });
-            } catch (e) {
-                console.error("Error accessing iframe content:", e);
-                console.warn("CORS restrictions might be preventing access to iframe content if the origin is different.");
-            }
-             // Highlight sidebar item when iframe src changes
-            updateSidebarActiveFromIframe();
-        });
-
-        // When load lại hoặc hashchange, cập nhật active
-        function updateSidebarActiveFromIframe() {
-            var src = document.getElementById('mainFrame').contentWindow.location.pathname;
-            var page = src.split('/').pop();
-            setActiveSidebar(page);
-        }
-        document.getElementById('mainFrame').addEventListener('load', updateSidebarActiveFromIframe);
-
-        // Khi load trang lần đầu
-        window.addEventListener('DOMContentLoaded', function() {
-            var src = document.getElementById('mainFrame').getAttribute('src');
-            var page = src.split('/').pop();
-            setActiveSidebar(page);
-        });
-
-        /*<![CDATA[*/
-        const currentAdminUsername = '[[${currentUser.username}]]'; // Using single quotes for string literal
-        const currentUserId = '[[${currentUser.id}]]'; // Get user ID from Thymeleaf model
-        /*]]>*/
-
-        document.getElementById('userInfoLink').addEventListener('click', function(event) {
-            // Fetch user data when the modal is about to be shown
-            fetch(`/admin/users/${currentAdminUsername}`)
-                .then(response => response.json())
-                .then(data => {
-                    const avatarModalImg = document.getElementById('modalUserAvatar');
-                    const imageUrl = data.imageUrl ? data.imageUrl : '/images/avatar.png';
-                    // Add timestamp to image URL to prevent caching
-                    avatarModalImg.src = imageUrl + '?timestamp=' + new Date().getTime();
-
-                    document.getElementById('modalEmail').value = data.email ? data.email : '';
-                    document.getElementById('modalPhone').value = data.phone ? data.phone : '';
-                    document.getElementById('modalUserId').value = data.id;
-                    document.getElementById('modalImageUrl').value = data.imageUrl ? data.imageUrl : ''; // Populate image URL input
-                    // Populate other input fields if needed
-                })
-                .catch(error => {
-                    console.error('Error fetching user data:', error);
-                    // Optionally display an error message in the modal
-                });
-        });
-
-        // Handle form submission for updating user info
-        document.getElementById('userInfoForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
-
-            const form = event.target;
-            // const formData = new FormData(form); // No longer need FormData for file upload
-            const formData = new URLSearchParams(); // Use URLSearchParams for simple key-value pairs
-
-            // Collect form data (excluding file input)
-            formData.append('id', document.getElementById('modalUserId').value);
-            formData.append('email', document.getElementById('modalEmail').value);
-            formData.append('phone', document.getElementById('modalPhone').value);
-            formData.append('imageUrl', document.getElementById('modalImageUrl').value); // Get value from text input
-
-            fetch('/admin/update-profile', {
-                method: 'POST',
-                headers: { // Add headers for URLSearchParams
-                     'Content-Type': 'application/x-www-form-urlencoded'
-                 },
-                body: formData // Send form data
-            })
-            .then(response => response.text()) // Expect text response (success or error message)
-            .then(result => {
-                console.log('Update result:', result);
-                // Display a success or error message (you might want a dedicated area in the modal)
-                alert(result); // Simple alert for now
-
-                // If update is successful, update the header avatar and reload
-                if (result.includes('successfully')) {
-                    const newImageUrl = document.getElementById('modalImageUrl').value;
-                    const headerAvatarImg = document.querySelector('.admin-topnav .user-avatar');
-                     if (headerAvatarImg) {
-                         // Update header avatar src with new URL and timestamp
-                         headerAvatarImg.src = (newImageUrl ? newImageUrl : '/images/avatar.png') + '?timestamp=' + new Date().getTime();
-                     }
-
-                    const modalElement = document.getElementById('userInfoModal');
-                    const modal = bootstrap.Modal.getInstance(modalElement);
-                    modal.hide();
-
-                    // Optional: Reload the page or update the displayed info after successful update
-                    // location.reload(); // Keep or remove depending on desired user experience
-                }
-            })
-            .catch(error => {
-                console.error('Error updating profile:', error);
-                alert('An error occurred while updating the profile.'); // Show generic error
-            });
         });
     </script>
 
@@ -425,5 +297,7 @@
         </div>
       </div>
     </div>
+    <!-- Đây là layout tổng thể, mọi controller trả về file này -->
+    <!-- Phần nội dung động sẽ được load vào <div id="mainContent"></div> -->
 </body>
 </html>

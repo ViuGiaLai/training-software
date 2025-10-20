@@ -161,229 +161,232 @@
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>Quản lý lịch học</h1>
-    </div>
-
-    <!-- Phần chọn lớp + chuyển tuần -->
-    <div class="row align-items-center mb-3">
-        <div class="col-auto">
-            <form method="get" th:action="@{/admin/dashboard/schedule-management}" id="classWeekForm" class="d-flex align-items-center">
-                <label for="classDropdown" class="form-label me-2 mb-0">Chọn lớp:</label>
-                <select class="form-select me-3" id="classDropdown" name="classId" onchange="document.getElementById('classWeekForm').submit()"
-                        style="width:auto;display:inline-block;">
-                    <option value="">-- Chọn lớp --</option>
-                    <option th:each="cl : ${classes}" th:value="${cl.id}" th:text="${cl.name}" th:selected="${cl.id == selectedClassId}"></option>
-                </select>
-                <input type="hidden" name="weekStart" th:value="${weekStart}">
-                <button type="button" class="btn btn-outline-secondary me-2" onclick="changeWeek(-1)">
-                    &lt;
-                </button>
-                <span>
-                    <i class="bi bi-calendar"></i>
-                    <span th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')}"></span>
-                    -
-                    <span th:text="${#temporals.format(weekEnd, 'dd/MM/yyyy')}"></span>
-                </span>
-                <button type="button" class="btn btn-outline-secondary ms-2" onclick="changeWeek(1)">
-                    &gt;
-                </button>
-            </form>
+<div data-fragment="content" th:fragment="content">
+    <!-- Phần nội dung động sẽ được load vào <div id="mainContent"></div> -->
+    <div class="container">
+        <div class="header">
+            <h1>Quản lý lịch học</h1>
         </div>
-    </div>
 
-    <div class="action-buttons">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createScheduleModal">
-            + Tạo lịch học
-        </button>
-        <a class="btn btn-success ms-2"
-           th:href="@{/admin/dashboard/schedule/export(classId=${selectedClassId}, weekStart=${weekStart})}"
-           th:if="${selectedClassId != null}">
-            <i class="fa fa-file-excel"></i> Xuất lịch
-        </a>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- Bảng thời khóa biểu theo tuần -->
-    <div th:if="${selectedClassId != null}">
-        <table class="schedule-table">
-            <thead>
-            <tr>
-                <th>Tiết</th>
-                <th>
-                    Thứ Hai<br>
-                    <span class="text-muted small" th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')}"></span>
-                </th>
-                <th>
-                    Thứ Ba<br>
-                    <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(1), 'dd/MM/yyyy')}"></span>
-                </th>
-                <th>
-                    Thứ Tư<br>
-                    <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(2), 'dd/MM/yyyy')}"></span>
-                </th>
-                <th>
-                    Thứ Năm<br>
-                    <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(3), 'dd/MM/yyyy')}"></span>
-                </th>
-                <th>
-                    Thứ Sáu<br>
-                    <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(4), 'dd/MM/yyyy')}"></span>
-                </th>
-                <th>
-                    Thứ Bảy<br>
-                    <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(5), 'dd/MM/yyyy')}"></span>
-                </th>
-                <th>
-                    Chủ Nhật<br>
-                    <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(6), 'dd/MM/yyyy')}"></span>
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="period : ${periods}">
-                <td>
-                    <span th:text="${period.name}"></span><br>
-                    <span class="text-muted small" th:text="|${period.startTime} - ${period.endTime}|"></span>
-                </td>
-                <td th:each="i : ${#numbers.sequence(0,6)}"
-                    th:with="cellDate=${weekStart.plusDays(i)}">
-                    <div th:each="schedule : ${schedules}"
-                         th:if="${schedule.period != null and schedule.period.id == period.id and schedule.date != null and schedule.date.equals(cellDate)}"
-                         class="schedule-cell"
-                         th:attr="data-id=${schedule.id},
-                                  data-subject-id=${schedule.subject != null ? schedule.subject.id : ''},
-                                  data-teacher-id=${schedule.teacher != null ? schedule.teacher.id : ''},
-                                  data-room-id=${schedule.room != null ? schedule.room.id : ''},
-                                  data-period-id=${schedule.period != null ? schedule.period.id : ''},
-                                  data-date=${schedule.date}"
-                         style="cursor:pointer"
-                         onclick="openEditScheduleModal(this)">
-                        <strong th:text="${schedule.subject != null ? ' Môn: ' + schedule.subject.name : ''}"></strong><br>
-                        <span th:text="${schedule.teacher != null ?' GV: ' + schedule.teacher.fullName : ''}"></span><br>
-                        <span th:text="${schedule.room != null ? schedule.room.name : ''}"></span>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <div th:if="${selectedClassId == null}">
-        <div class="alert alert-info">Vui lòng chọn lớp để xem thời khóa biểu.</div>
-    </div>
-
-    <!-- Modal Tạo lịch học -->
-    <div class="modal fade" id="createScheduleModal" tabindex="-1" aria-labelledby="createScheduleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <form th:action="@{/admin/dashboard/schedule/create}" method="post" class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="createScheduleModalLabel">
-                        <i class="fas fa-calendar-plus me-2"></i> Tạo lịch học mới
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Lớp học <span class="text-danger">*</span></label>
-                        <select class="form-select" name="classId" required>
-                            <option value="">Chọn lớp</option>
-                            <option th:each="cl : ${classes}" th:value="${cl.id}" th:text="${cl.name}" th:selected="${cl.id == selectedClassId}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Môn học <span class="text-danger">*</span></label>
-                        <select class="form-select" name="subjectId" required>
-                            <option value="">Chọn môn</option>
-                            <option th:each="sub : ${subjects}" th:value="${sub.id}" th:text="${sub.name}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Giáo viên <span class="text-danger">*</span></label>
-                        <select class="form-select" name="teacherId" required>
-                            <option value="">Chọn giáo viên</option>
-                            <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Phòng học <span class="text-danger">*</span></label>
-                        <select class="form-select" name="roomId" required>
-                            <option value="">Chọn phòng</option>
-                            <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tiết học <span class="text-danger">*</span></label>
-                        <select class="form-select" name="periodId" required>
-                            <option value="">Chọn tiết</option>
-                            <option th:each="period : ${periods}" th:value="${period.id}"
-                                    th:text="|${period.name} (${period.startTime} - ${period.endTime})|"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Ngày <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" name="date" required>
-                    </div>
+        <!-- Phần chọn lớp + chuyển tuần -->
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <form method="get" th:action="@{/admin/dashboard/schedule-management}" id="classWeekForm" class="d-flex align-items-center">
+                    <label for="classDropdown" class="form-label me-2 mb-0">Chọn lớp:</label>
+                    <select class="form-select me-3" id="classDropdown" name="classId" onchange="document.getElementById('classWeekForm').submit()"
+                            style="width:auto;display:inline-block;">
+                        <option value="">-- Chọn lớp --</option>
+                        <option th:each="cl : ${classes}" th:value="${cl.id}" th:text="${cl.name}" th:selected="${cl.id == selectedClassId}"></option>
+                    </select>
                     <input type="hidden" name="weekStart" th:value="${weekStart}">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
-                </div>
-            </form>
+                    <button type="button" class="btn btn-outline-secondary me-2" onclick="changeWeek(-1)">
+                        &lt;
+                    </button>
+                    <span>
+                        <i class="bi bi-calendar"></i>
+                        <span th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')}"></span>
+                        -
+                        <span th:text="${#temporals.format(weekEnd, 'dd/MM/yyyy')}"></span>
+                    </span>
+                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="changeWeek(1)">
+                        &gt;
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <!-- Modal Sửa lịch học -->
-    <div class="modal fade" id="editScheduleModal" tabindex="-1" aria-labelledby="editScheduleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <form id="editScheduleForm" th:action="@{/admin/dashboard/schedule/edit}" method="post" class="modal-content">
-                <input type="hidden" name="id" id="edit-schedule-id">
-                <input type="hidden" name="classId" th:value="${selectedClassId}">
-                <input type="hidden" name="weekStart" th:value="${weekStart}">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title" id="editScheduleModalLabel">
-                        <i class="fas fa-edit me-2"></i> Sửa lịch học
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Môn học</label>
-                        <select class="form-select" name="subjectId" id="edit-subjectId" required>
-                            <option th:each="sub : ${subjects}" th:value="${sub.id}" th:text="${sub.name}"></option>
-                        </select>
+        <div class="action-buttons">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createScheduleModal">
+                + Tạo lịch học
+            </button>
+            <a class="btn btn-success ms-2"
+               th:href="@{/admin/dashboard/schedule/export(classId=${selectedClassId}, weekStart=${weekStart})}"
+               th:if="${selectedClassId != null}">
+                <i class="fa fa-file-excel"></i> Xuất lịch
+            </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Bảng thời khóa biểu theo tuần -->
+        <div th:if="${selectedClassId != null}">
+            <table class="schedule-table">
+                <thead>
+                <tr>
+                    <th>Tiết</th>
+                    <th>
+                        Thứ Hai<br>
+                        <span class="text-muted small" th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')}"></span>
+                    </th>
+                    <th>
+                        Thứ Ba<br>
+                        <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(1), 'dd/MM/yyyy')}"></span>
+                    </th>
+                    <th>
+                        Thứ Tư<br>
+                        <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(2), 'dd/MM/yyyy')}"></span>
+                    </th>
+                    <th>
+                        Thứ Năm<br>
+                        <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(3), 'dd/MM/yyyy')}"></span>
+                    </th>
+                    <th>
+                        Thứ Sáu<br>
+                        <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(4), 'dd/MM/yyyy')}"></span>
+                    </th>
+                    <th>
+                        Thứ Bảy<br>
+                        <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(5), 'dd/MM/yyyy')}"></span>
+                    </th>
+                    <th>
+                        Chủ Nhật<br>
+                        <span class="text-muted small" th:text="${#temporals.format(weekStart.plusDays(6), 'dd/MM/yyyy')}"></span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="period : ${periods}">
+                    <td>
+                        <span th:text="${period.name}"></span><br>
+                        <span class="text-muted small" th:text="|${period.startTime} - ${period.endTime}|"></span>
+                    </td>
+                    <td th:each="i : ${#numbers.sequence(0,6)}"
+                        th:with="cellDate=${weekStart.plusDays(i)}">
+                        <div th:each="schedule : ${schedules}"
+                             th:if="${schedule.period != null and schedule.period.id == period.id and schedule.date != null and schedule.date.equals(cellDate)}"
+                             class="schedule-cell"
+                             th:attr="data-id=${schedule.id},
+                                      data-subject-id=${schedule.subject != null ? schedule.subject.id : ''},
+                                      data-teacher-id=${schedule.teacher != null ? schedule.teacher.id : ''},
+                                      data-room-id=${schedule.room != null ? schedule.room.id : ''},
+                                      data-period-id=${schedule.period != null ? schedule.period.id : ''},
+                                      data-date=${schedule.date}"
+                             style="cursor:pointer"
+                             onclick="openEditScheduleModal(this)">
+                            <strong th:text="${schedule.subject != null ? ' Môn: ' + schedule.subject.name : ''}"></strong><br>
+                            <span th:text="${schedule.teacher != null ?' GV: ' + schedule.teacher.fullName : ''}"></span><br>
+                            <span th:text="${schedule.room != null ? schedule.room.name : ''}"></span>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${selectedClassId == null}">
+            <div class="alert alert-info">Vui lòng chọn lớp để xem thời khóa biểu.</div>
+        </div>
+
+        <!-- Modal Tạo lịch học -->
+        <div class="modal fade" id="createScheduleModal" tabindex="-1" aria-labelledby="createScheduleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <form th:action="@{/admin/dashboard/schedule/create}" method="post" class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="createScheduleModalLabel">
+                            <i class="fas fa-calendar-plus me-2"></i> Tạo lịch học mới
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Giáo viên</label>
-                        <select class="form-select" name="teacherId" id="edit-teacherId" required>
-                            <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
-                        </select>
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Lớp học <span class="text-danger">*</span></label>
+                            <select class="form-select" name="classId" required>
+                                <option value="">Chọn lớp</option>
+                                <option th:each="cl : ${classes}" th:value="${cl.id}" th:text="${cl.name}" th:selected="${cl.id == selectedClassId}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Môn học <span class="text-danger">*</span></label>
+                            <select class="form-select" name="subjectId" required>
+                                <option value="">Chọn môn</option>
+                                <option th:each="sub : ${subjects}" th:value="${sub.id}" th:text="${sub.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Giáo viên <span class="text-danger">*</span></label>
+                            <select class="form-select" name="teacherId" required>
+                                <option value="">Chọn giáo viên</option>
+                                <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phòng học <span class="text-danger">*</span></label>
+                            <select class="form-select" name="roomId" required>
+                                <option value="">Chọn phòng</option>
+                                <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tiết học <span class="text-danger">*</span></label>
+                            <select class="form-select" name="periodId" required>
+                                <option value="">Chọn tiết</option>
+                                <option th:each="period : ${periods}" th:value="${period.id}"
+                                        th:text="|${period.name} (${period.startTime} - ${period.endTime})|"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="date" required>
+                        </div>
+                        <input type="hidden" name="weekStart" th:value="${weekStart}">
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Phòng học</label>
-                        <select class="form-select" name="roomId" id="edit-roomId" required>
-                            <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"></option>
-                        </select>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tiết học</label>
-                        <select class="form-select" name="periodId" id="edit-periodId" required>
-                            <option th:each="period : ${periods}" th:value="${period.id}"
-                                    th:text="|${period.name} (${period.startTime} - ${period.endTime})|"></option>
-                        </select>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Sửa lịch học -->
+        <div class="modal fade" id="editScheduleModal" tabindex="-1" aria-labelledby="editScheduleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <form id="editScheduleForm" th:action="@{/admin/dashboard/schedule/edit}" method="post" class="modal-content">
+                    <input type="hidden" name="id" id="edit-schedule-id">
+                    <input type="hidden" name="classId" th:value="${selectedClassId}">
+                    <input type="hidden" name="weekStart" th:value="${weekStart}">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title" id="editScheduleModalLabel">
+                            <i class="fas fa-edit me-2"></i> Sửa lịch học
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Ngày</label>
-                        <input type="date" class="form-control" name="date" id="edit-date" required>
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Môn học</label>
+                            <select class="form-select" name="subjectId" id="edit-subjectId" required>
+                                <option th:each="sub : ${subjects}" th:value="${sub.id}" th:text="${sub.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Giáo viên</label>
+                            <select class="form-select" name="teacherId" id="edit-teacherId" required>
+                                <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phòng học</label>
+                            <select class="form-select" name="roomId" id="edit-roomId" required>
+                                <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tiết học</label>
+                            <select class="form-select" name="periodId" id="edit-periodId" required>
+                                <option th:each="period : ${periods}" th:value="${period.id}"
+                                        th:text="|${period.name} (${period.startTime} - ${period.endTime})|"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày</label>
+                            <input type="date" class="form-control" name="date" id="edit-date" required>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-warning">Lưu thay đổi</button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-warning">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

@@ -153,3 +153,13 @@ INSERT INTO schedule (
     (1, '2025-06-04', 2, 3, 203, 3, 3),
     (2, '2025-06-06', 2, 5, 303, 6, 4),
     (3, '2025-06-06', 3, 1, 204, 10, 4);
+
+-- Sửa kiểu dữ liệu các trường date trong bảng users_students (nếu cần)
+ALTER TABLE users_students
+    ALTER COLUMN date_of_birth TYPE date USING NULLIF(date_of_birth, '')::date;
+
+ALTER TABLE users_students
+    ALTER COLUMN enrollment_date TYPE date USING NULLIF(enrollment_date, '')::date;
+
+ALTER TABLE users_students
+    ALTER COLUMN identity_issue_date TYPE date USING NULLIF(identity_issue_date, '')::date;
