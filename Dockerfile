@@ -10,7 +10,8 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 
-ENV PORT=8080
-EXPOSE 8080
+# Render will provide $PORT automatically
+EXPOSE ${PORT}
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the app
+CMD ["java", "-jar", "app.jar"]
